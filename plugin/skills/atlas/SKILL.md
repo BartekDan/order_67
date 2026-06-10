@@ -1,28 +1,64 @@
 ---
 name: atlas
-description: Regenerate the project-level ATLAS — a single control surface that shows the WHOLE exploration in one place: a you-are-here pointer, the exploration TREE (every path including dead-ends and backtracks, each with its `why`), a status table, the method battery, the parking lot, and a drift check. Generated from the hand-curated ledger experiments/_atlas/atlas.yaml by skills/atlas/atlas.py into experiments/_atlas/STATUS.md + ATLAS.html. The research-harness analog of order-66 /atlas. Unlike /drift (consolidation pass) it is a fast deterministic render and deliberately shows in-flight + abandoned state.
-whenToUse: Invoked when the user is lost about overall project state or wants the cross-experiment map — NOT a single experiment. Triggered by "/atlas", "where are we", "what's the project status", "show the roadmap/map/board", "regenerate the atlas", "what's left", "what did we try and drop", or at the end of a working session and whenever a path is started, blocked, dead-ended, superseded, deferred, or backtracked. Prefer this over reading experiment.json files one by one when the question is "what does this whole project consist of and what's live right now".
+description: Regenerate the project-level ATLAS — now THREE artifacts under experiments/_atlas/. (1) STATUS.md, the thin board rendered deterministically by skills/atlas/atlas.py from the hand-curated ledger atlas.yaml — you-are-here, the exploration TREE (every path incl. dead-ends/backtracks, each with its `why`), status table, method battery, parking lot, drift check. (2) ATLAS.md, THE deep single-place dossier (the science + the mechanics per experiment) — full falsifiable hypothesis cards, numbered pipeline walks with path:symbol:line citations into the ACTUAL run code, verbatim statistics/estimators, data & leakage controls, a mandatory "what the numbers mean, computed" derivation table per experiment (which runs, which code, which CI method, which stats.json key), repro bundles, DDR full text with trade-offs, pre-registered-vs-post-hoc threshold tables, runs & verdicts ledgers, gotchas from ALL Run Notes. (3) ATLAS.html, a self-contained house-editorial render of ATLAS.md produced DETERMINISTICALLY by skills/atlas/render_html.py — never authored separately. The research analog of order-66 /atlas v2. Incremental by default; --full rebuilds everything.
+whenToUse: Invoked when the user is lost about overall project state, wants the cross-experiment map, or asks how an experiment ACTUALLY works / where a reported number comes from. Triggered by "/atlas", "where are we", "what's the project status", "show the map/board", "what did we try and drop", "how does EXP-X actually work", "where does that number come from", "regenerate the atlas", and at the end of a working session or whenever a path is started, blocked, dead-ended, superseded, deferred, or backtracked. Prefer this over reading experiment.json files one by one.
 isEnabled: test -d experiments
 ---
 
-# /atlas — the single project control surface
+# /atlas — the single project control surface (v2: board + deep dossier)
 
 ## Static
 
 ### Summary
-The ATLAS is how the human keeps control of a branching research project in **one place** — every path, including
-the ones we abandoned and *why*, so backtracking never loses information. It is generated, never hand-kept.
+The ATLAS is how the human keeps control of a branching research project in **one place** — every
+path including the abandoned ones and *why*, AND the full depth of each experiment (the science +
+the mechanics), so neither backtracking nor onboarding ever loses information. Three artifacts
+under `experiments/_atlas/`:
 
-- **Source of truth:** `experiments/_atlas/atlas.yaml` — a hand-curated ledger. Edit this.
-- **Generator:** `${CLAUDE_PLUGIN_ROOT}/skills/atlas/atlas.py` (PyYAML required).
-- **Outputs (generated — never hand-edit):** `experiments/_atlas/STATUS.md` (the board) and
-  `experiments/_atlas/ATLAS.html` (a self-contained styled one-pager).
+1. **`STATUS.md`** — the thin board. Rendered **deterministically** by
+   `${CLAUDE_PLUGIN_ROOT}/skills/atlas/atlas.py` from the hand-curated ledger
+   `experiments/_atlas/atlas.yaml` (PyYAML required). You-are-here, the exploration tree with
+   per-dead-end `why`, status table, method battery, cross-cutting truths, parking lot, drift
+   check. Unchanged from v1.
+2. **`ATLAS.md`** — **the deep dossier: ONE place holding everything, science AND mechanics.**
+   Model-authored from deep sources per `templates/atlas-deep.md.tpl` (its HTML comments are the
+   AUTHORING RULES — follow them, strip them from output). Per experiment: the FULL falsifiable
+   H-NNN hypothesis cards; a numbered pipeline walk of what one run actually computes with
+   `path` · `symbol()` · line citations into the real code (or, for remote runs, the dispatch
+   flow plus the bundle files proving what ran); runtime topology; the statistics/estimators
+   **verbatim** with terms defined; data & splits with the leakage controls that passed/failed;
+   a mandatory **"what the numbers mean, computed"** table — for every reported metric/figure/
+   claim, its exact derivation (which RUN-IDs × seeds, which code, which CI/correction method,
+   which `stats.json` key); failure paths; the repro bundle; DDR full text with trade-offs and
+   flip triggers; a **pre-registered-vs-post-hoc** constants table (the FROZEN column is
+   load-bearing — RULE-3/RULE-6 honesty); a runs & verdicts ledger (results-verifier verdict +
+   confound-audit Survives per key run); files & symbols map; and gotchas from ALL Run Notes.
+   Project head: the program at a glance, **the exploration tree copied VERBATIM from the
+   freshly regenerated STATUS.md** (single source = atlas.yaml — never re-drawn), a program
+   data-flow ASCII (data → method → runs → metrics → gates → claim), compute & runtime surfaces
+   inventory, data & results artifacts inventory, the dependency/retraction-cascade graph **with
+   an explanation of how it is built** (ledger `parent:` edges + `_Depends:_` evidence edges),
+   the method battery, and cross-cutting invariants.
+3. **`ATLAS.html`** — the editorial render of ATLAS.md: self-contained house style (Fraunces /
+   Inter Tight / JetBrains Mono on the paper palette, sticky TOC, styled derivation tables and
+   ASCII diagrams). Generated **deterministically** by
+   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`.
+   **Content single-source rule:** ATLAS.md is the only authored artifact; ATLAS.html is a pure
+   presentation of it, re-rendered after every ATLAS.md write. (v1's board-style ATLAS.html is
+   retired; `atlas.py` no longer emits HTML.)
 
-### The ledger schema (`experiments/_atlas/atlas.yaml`)
+**The depth bar (binding):** a competent researcher new to the project, reading ONLY ATLAS.md,
+must be able to answer — (1) what each experiment actually computes end-to-end; (2) where every
+reported number comes from (runs, code, CI method); (3) what was frozen at pre-registration vs
+decided post-hoc; (4) what data/compute artifacts exist and their shape; (5) why each design
+decision was made, what would flip it — and for every dead-end, why it died. A section that
+can't answer these is too shallow; go back to the sources.
+
+### The ledger schema (`experiments/_atlas/atlas.yaml`) — unchanged
 ```yaml
 project: "<name>"
 regime: "<optional one-liner>"          # optional
-you_are_here: {node: <id>, summary: <...>, blocker: <...>, next: <...}   # optional
+you_are_here: {node: <id>, summary: <...>, blocker: <...>, next: <...>}   # optional
 nodes:                                    # REQUIRED — the exploration tree
   - id: <unique-id>                       # experiment dirs use their dir name (EXP-...)
     kind: experiment|step|method|decision|dead-end|idea
@@ -36,48 +72,111 @@ battery: [...]        # optional: reusable method modules + state
 cross_cutting: [...]  # optional: frozen truths that bind every node
 parking_lot: [...]    # optional: real ideas/tasks not started
 infra: {...}          # optional: environment / current blocker
-archived: {...}       # optional: off-board scope (e.g. a frozen prior regime) + carried lessons
+archived: {...}       # optional: off-board scope + carried lessons
 ```
-Only `project` + `nodes` are required; every other section renders if present, skips if absent.
+Lifecycle glyphs: ✅ done · ▶ active · ⛔ blocked · ✗ dead-end · ⊘ superseded · ⏸ deferred · ◻ not built · 💡 idea
 
-### Lifecycle glyphs
-✅ done · ▶ active · ⛔ blocked · ✗ dead-end · ⊘ superseded · ⏸ deferred · ◻ not built · 💡 idea
+### Parameters
+- `exp` — optional. Rebuild only that experiment's ATLAS.md section (head + STATUS.md always refresh).
+- `--full` — optional. Rebuild every section from sources. Required on `Template-rev` mismatch,
+  when ATLAS.md is missing/pre-v2, or when cross-experiment facts are suspected stale.
+- No-argument invocation: **incremental by default** — diff each experiment's
+  `**Tier:** … **Status:** … **Verdict:**` header line in the existing ATLAS.md against the
+  ledger + experiment.json; changed/new nodes form the rebuild set (a node with no existing
+  section counts as changed; a section whose experiment left the ledger is dropped at assembly,
+  noted in the report). Empty set → still refresh STATUS.md + the head.
 
 ### Output format
-Writes the two files under `experiments/_atlas/`, then emits a `## AtlasReport` block (counts + you-are-here +
-drift). Heading is exactly `## AtlasReport` so it is greppable.
+1. `experiments/_atlas/STATUS.md` — via `python "${CLAUDE_PLUGIN_ROOT}/skills/atlas/atlas.py" "${CLAUDE_PROJECT_DIR}"`.
+2. `experiments/_atlas/ATLAS.md` — per `templates/atlas-deep.md.tpl`.
+3. `experiments/_atlas/ATLAS.html` — via `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`
+   AFTER writing ATLAS.md (also in incremental mode). On renderer error: surface it, still finish
+   (ATLAS.md is the source of truth); never hand-write the HTML instead.
+
+Then emit the combined `## AtlasReport` block: atlas.py's printed block (counts + you-are-here +
+drift) extended with `Regen-mode`, `Sections-rebuilt`, and
+`Outputs: STATUS.md, ATLAS.md, ATLAS.html`.
 
 ### Hard constraints
-- **Dead-ends and backtracks are FIRST-CLASS.** Never delete an abandoned path from the ledger — set its
-  `lifecycle` to `dead-end`/`superseded`/`deferred` and write a one-line `why:`. Losing that history is the
-  exact failure this skill exists to prevent.
-- **Never hand-edit the generated files** (`STATUS.md`, `ATLAS.html`). Edit `atlas.yaml` and regenerate; a re-run
-  overwrites them.
-- **Resolve drift immediately.** The AtlasReport flags any `experiments/EXP-*` dir with no ledger node (a path
-  off the board) and any started experiment node whose dir is gone. A board that silently omits a path lies — fix it.
-- **Skip leading-underscore dirs** (`experiments/_atlas`, `experiments/_global`) as experiments; they are infra.
-- **Scope is the human's call.** If a prior regime / line of work is declared off-board, keep it only as the
-  `archived:` pointer + carried lessons — never render its detail or mix its numbers onto the live board.
+- **Dead-ends and backtracks are FIRST-CLASS.** Never delete an abandoned path from the ledger —
+  set `lifecycle: dead-end|superseded|deferred` + a one-line `why:`. In ATLAS.md a dead-end's
+  Gotchas section IS the deliverable (the lesson kept).
+- **Deep sourcing is mandatory for ATLAS.md experiment sections.** Inputs per experiment:
+  `experiment.json`; `hypothesis.md` (FULL H-NNN cards); `design.md` (methods + DDR FULL TEXT);
+  `runs.md` (statuses + **ALL Run Notes**); `preregistration.md` + `prereg.lock`;
+  `data-audit.md`; `audit.md` (confound audit); `verdict.md`; `analysis.md`;
+  `runs/RUN-*/` bundles (`config.resolved.json`, `metrics.json`, `seed.txt`, `env.lock`,
+  `dataset.hash`, `git.commit`); `results/<exp>/stats.json` + figures; `trace/<exp>.md`; **and
+  the actual run code** where it exists in-repo. Spec summaries alone are NOT a valid source for
+  a mechanics section.
+- **Citation rule:** every mechanical claim cites `path` + symbol (+ line as of generation);
+  every NUMBER cites its artifact (`stats.json` key, `metrics.json` field, prereg.lock).
+  Unverifiable → `unverified — inferred from <source>` or omitted. Never from memory.
+- **"What the numbers mean, computed" is mandatory** for every experiment with reported results.
+- **Pre-registered vs post-hoc is load-bearing:** every threshold/constant row carries the
+  FROZEN column (YES = inside prereg.lock's hashed plan · POST-HOC = decided after data, with
+  the defense stated · n/a). Mislabeling this fails review.
+- **The exploration tree in ATLAS.md is copied verbatim** from the freshly regenerated STATUS.md
+  tree block — never re-drawn, never edited (single source: atlas.yaml).
+- **ATLAS.html is render-only** (self-contained: inline CSS, fonts via `@import` in `<style>`,
+  no external files, no JS). Authoring content in it that is not in ATLAS.md breaks the
+  single-source rule.
+- **Incremental coherence:** rebuilding one experiment's section also refreshes the project head
+  (tree, inventories, graphs, generated-at) and any sibling sections whose `_Depends:_` /
+  retraction edges name the changed experiment. When in doubt, `--full`.
+- **Never hand-edit generated files** (`STATUS.md`, `ATLAS.md`, `ATLAS.html`). Edit `atlas.yaml`
+  / the experiment files and regenerate.
+- **Resolve drift immediately** (atlas.py flags dirs-without-node / nodes-without-dir); a board
+  that omits a path lies. Skip leading-underscore dirs as experiments. Off-board scope stays
+  `archived:`-only.
+- **No absolute paths** in the skill body or generated output; the skill body uses
+  `${CLAUDE_PLUGIN_ROOT}`; generated citations are repo-relative.
 
 ### Common mistakes (avoid)
-1. Hand-editing `STATUS.md`/`ATLAS.html` instead of the ledger (they are overwritten on the next run).
-2. Deleting a failed experiment's node "to clean up" — that destroys the backtrack record; mark it `dead-end` + `why`.
-3. Ignoring a drift warning — if a real `EXP-*` dir isn't in the ledger, the board is lying; add the node.
+1. **Building the dossier from doc summaries only** — the failure mode v2 exists to kill (same
+   as order-66): hypothesis one-liners + DDR titles + a file list cannot answer "what does this
+   experiment actually compute". Open the run code, the bundles, and the Run Notes.
+2. **Uncited numbers.** "balanced accuracy beat chance" is a vibe; "bal_acc 0.61 ± 0.04 (95% CI,
+   seed-bootstrap n=12, `results/EXP-x/stats.json:bal_acc`) vs permutation chance 0.50
+   (`audit.md` C-001)" is a result.
+3. **Flattening prereg honesty** — presenting a post-hoc threshold as if frozen (or omitting the
+   FROZEN column). The distinction is the harness's core rule.
+4. **Hand-editing STATUS.md/ATLAS.html instead of the sources** (overwritten on next run); or
+   deleting a failed node "to clean up" — mark it dead-end + `why`.
+5. **Running `--full` on every invocation** (it re-reads every experiment's code) — default is
+   incremental; escalate on Template-rev mismatch or stale cross-experiment facts. Equally
+   wrong: incremental forever while retraction edges rot.
 
 ## Dynamic
 
-`experiments/` exists when this fires. Steps:
+`experiments/` exists when this fires. Templates at `${CLAUDE_PLUGIN_ROOT}/skills/atlas/templates/`:
+`atlas-deep.md.tpl` (authoring rules in its comments). Renderer: `render_html.py` (zero-dep).
+Board generator: `atlas.py` (PyYAML).
 
-1. **If project state changed, update the ledger first** — `experiments/_atlas/atlas.yaml`:
-   - move `you_are_here` (node + summary + blocker + next);
-   - update the affected node's `lifecycle` / `verdict` / `next`;
-   - a path abandoned/backtracked → set `lifecycle: dead-end|superseded|deferred` + a `why:` (do NOT delete it);
-   - a new idea → add a node with `lifecycle: idea`;
-   - keep `battery:` / `parking_lot:` current.
-2. **Regenerate** (run against the current project):
-   ```bash
-   python "${CLAUDE_PLUGIN_ROOT}/skills/atlas/atlas.py" "${CLAUDE_PROJECT_DIR}"
-   ```
-   (PyYAML must be importable by that python. If absent: `pip install pyyaml`.)
-3. **Report** the printed `## AtlasReport` (counts + you-are-here + any drift) to the user. If drift is flagged,
-   add/fix the node in the ledger and re-run before finishing.
+### Algorithm
+
+1. **Update the ledger first** if project state changed — `experiments/_atlas/atlas.yaml`:
+   move `you_are_here`; update affected nodes' `lifecycle`/`verdict`/`next`; abandoned path →
+   `dead-end|superseded|deferred` + `why:` (never delete); new idea → `lifecycle: idea`; keep
+   `battery:`/`parking_lot:` current.
+2. **Regenerate the board:** `python "${CLAUDE_PLUGIN_ROOT}/skills/atlas/atlas.py" "${CLAUDE_PROJECT_DIR}"`
+   (PyYAML required). Fix any drift it flags (add/repair ledger nodes), re-run until clean.
+3. **Decide regen mode** (see Parameters): full / explicit `exp` / incremental diff of section
+   header lines vs ledger + experiment.json state.
+4. **Per experiment in the rebuild set, gather deep sources** (the full list in Hard
+   constraints) — then **open the run code and the bundles**: entry points, stages, key symbols
+   + lines, the statistic implementations, config deltas, metrics/stats fields.
+5. **Write each experiment section** per the template skeleton (science → mechanics incl.
+   "what the numbers mean, computed" → DDRs → prereg constants table → runs & verdicts ledger →
+   files & symbols → gotchas), applying the depth bar + citation rule.
+6. **Project head** (always rebuilt): program paragraph; the tree COPIED from STATUS.md;
+   program data-flow ASCII + legend; compute & runtime surfaces; data & results artifacts;
+   dependency/retraction graph + "how this graph is built" (+ discrepancies or "none known");
+   method battery; cross-cutting invariants (`atlas.yaml` + `experiments/_global/invariants.md`).
+7. **Assemble ATLAS.md** (experiments in tree order, parents first; in incremental mode carry
+   unchanged sections over VERBATIM), parking lot + archived tail, strip template comments,
+   write. Frontmatter carries `template_rev` copied from the template's `Template-rev:` line.
+8. **Render:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`
+   → confirms the sibling ATLAS.html path. On error: report, continue.
+9. **Emit the combined `## AtlasReport`** (atlas.py block + Regen-mode + Sections-rebuilt +
+   the three Outputs). If drift was flagged and fixed, say so.
