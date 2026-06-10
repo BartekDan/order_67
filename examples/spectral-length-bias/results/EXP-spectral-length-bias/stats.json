@@ -1,0 +1,42 @@
+{
+  "experiment": "EXP-spectral-length-bias",
+  "fixture": true,
+  "claims": [
+    {
+      "claim_id": "C-001",
+      "metric": "balanced_accuracy",
+      "post_hoc": false,
+      "n": 18,
+      "n_held_out_qids": 412,
+      "variation_source": "split",
+      "mean": 0.71,
+      "ci_low": 0.66,
+      "ci_high": 0.76,
+      "ci_method": "bootstrap-BCa",
+      "n_resamples": 2000,
+      "effect_size_kind": "bal_acc_delta",
+      "effect_size": 0.21,
+      "effect_size_ci": [0.18, 0.24],
+      "baseline_ref": "chance=0.5",
+      "correction": "benjamini-hochberg",
+      "n_comparisons": 3600,
+      "p_adj": 4e-06,
+      "cross_model_norm": "per_model_zscore",
+      "confound_audit_survives": false,
+      "confound_audit": {
+        "permutation_null": {"true_stat": 0.71, "null_mean": 0.50, "null_sd": 0.034, "K": 1000, "z": 6.2, "p_perm": 1.0e-3, "threshold_z": 3.0, "verdict": "PASS"},
+        "nuisance_screen": {"nuisance": "answer_length_tokens", "test": "mann-whitney", "median_hallucinated": 142, "median_faithful": 38, "p": 9.4e-5, "feature_length_spearman_rho": 0.79, "bal_acc_length_regressed": 0.53, "bal_acc_length_regressed_ci": [0.49, 0.57], "explained_by_confound": "yes", "threshold_alpha": 0.05, "verdict": "FAIL"},
+        "statistic_swap": {"alt": "length_invariant_scattering", "bal_acc_alt": 0.54, "delta": 0.17, "tolerance_t": 0.05, "conclusion_holds": false, "verdict": "FAIL"},
+        "alt_preprocessing": {"alt": "drop_fixed_length_32_resampling", "bal_acc_alt": 0.55, "effect_retained_frac": 0.24, "threshold_r": 0.80, "verdict": "FAIL"}
+      },
+      "null_result": false,
+      "powered": true,
+      "scope": "labelled, ~22%-filtered English proteus-QA distribution; answers with non-empty H-Neuron trajectories; 18 models",
+      "tier_applied": "confirmatory",
+      "status": "retracted",
+      "retraction_reason": "answer-length confound: signal is real vs random labels (permutation z=6.2) but does not survive the nuisance screen (length-regressed bal-acc 0.53 ≈ chance), the statistic-swap, or the alt-preprocessing re-run. Detects length, not hallucination (RULE-6).",
+      "figure": "results/EXP-spectral-length-bias/figures/fig1_balacc_vs_chance.svg",
+      "audit": "experiments/EXP-spectral-length-bias/audit.md"
+    }
+  ]
+}

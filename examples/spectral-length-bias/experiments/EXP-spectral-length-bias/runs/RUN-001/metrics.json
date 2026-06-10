@@ -1,0 +1,33 @@
+{
+  "run": "RUN-001",
+  "experiment": "EXP-spectral-length-bias",
+  "node": "T-004",
+  "primary_metric": "balanced_accuracy",
+  "held_out_balanced_accuracy": 0.71,
+  "balanced_accuracy_ci_low": 0.66,
+  "balanced_accuracy_ci_high": 0.76,
+  "ci_method": "bootstrap-BCa",
+  "ci_n_resamples": 2000,
+  "variation_source": "split",
+  "chance_baseline": 0.50,
+  "balanced_accuracy_delta_over_chance": 0.21,
+  "n_models": 18,
+  "n_held_out_qids": 412,
+  "seeds": [0, 1, 2, 3, 4],
+  "permutation_null_z": 6.2,
+  "nuisance_screen": {
+    "nuisance_variable": "answer_length_tokens",
+    "median_length_hallucinated": 142,
+    "median_length_faithful": 38,
+    "length_mannwhitney_u_p": 9.4e-05,
+    "feature_length_spearman_rho": 0.79,
+    "balanced_accuracy_length_regressed_out": 0.53,
+    "balanced_accuracy_length_regressed_ci_low": 0.49,
+    "balanced_accuracy_length_regressed_ci_high": 0.57
+  },
+  "multiple_comparisons": {
+    "n_comparisons": 3600,
+    "correction": "benjamini-hochberg",
+    "fdr_threshold_p": 1e-05
+  }
+}

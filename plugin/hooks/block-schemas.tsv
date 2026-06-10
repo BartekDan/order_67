@@ -1,0 +1,26 @@
+# block-schemas.tsv — required mechanical fields per ## Block (CONVENTIONS.md §4).
+# Format: <BlockName> <comma,separated,required,field,keys>
+# Columns are separated by the FIRST whitespace run; BlockName has no spaces,
+# field keys may contain spaces (e.g. "Tier applied"). Keep in sync with CONVENTIONS.md §4.
+# A field key may carry an inline VALUE constraint: Field=nonblank or Field=enum:A|B|C
+# (enum options are |-separated; the comma stays the field separator). block-lint.sh
+# checks presence for every field and the value rule for any constrained field.
+ResearchRouting Path,Experiment,Rigor-tier,Rationale,Next action,Confidence,Signal-validated
+Preregistration Experiment,Hypotheses,Primary-metric,Splits,Analysis-plan,Prereg-hash,Rigor-tier
+DesignDraft Experiment,Quicklook,DDR-count,Datasets,Compute-plan,Threats
+DataAudit Experiment,L1=nonblank,L2=nonblank,L3=nonblank,Leakage-checks,Secret-scan,Verdict=enum:PASS|FAIL
+RunPlan Experiment,Nodes,Seed-policy,Budget,Quicklook-task
+Conflicts Experiment,Scanned,Findings,Verdict=enum:CLEAR|BLOCKER
+RunReport Run,Node,Status,Metrics,Seed,Artifacts,Trace
+ConfoundAudit Claim,Permutation-null,Nuisance-screen,Statistic-swap,Alt-preprocessing,Survives=enum:YES|NO
+AnalysisReport Experiment,Primary-metric,Effect-size,CI,Correction,Figures
+Verdict Verdict=enum:PROMOTE|PROMOTE-WITH-CAVEAT|RERUN|REJECT|BLOCKED,Tier applied,Claims,Required fixes
+PaperReport Experiment,Artifact,Checklist,Citations-needed,Open-gaps
+BriefReport Experiment,Artifact,Bottom-line,Grade,Next-actions
+DriftReport Scanned,Consolidated,Retractions,Rigor-debt-overdue,Pruned
+ReproReport Run,Seed-recorded,Config-snapshot,Env-pinned,NeurIPS-4-8,Verdict
+Review Recommendation,Scores,Major-issues,Minor-issues
+FigureReport Figure,Lint,Violations,Path
+RunList Experiments,Count
+RunStatus Experiment,Runs,Promoted,Halted
+ArtifactOwnership Experiment,Owns,Conflicts

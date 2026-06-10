@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "order-67",
+  "description": "Single-plugin marketplace for the order-67 research harness (\"Proteus Harness\"). Internal team distribution: the repo root is the plugin (source \".\"). Sibling of the order-66 SDD-harness marketplace.",
+  "owner": {
+    "name": "bartek",
+    "email": "bartek.dan@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "order-67-research-harness",
+      "description": "Rigor-aware AI/ML research harness. Skills: /triage, /register, /design-experiment, /data-audit, /plan-runs, /conflicts, /execute, /confound-audit, /analyze, /verify-claim, /paper, /brief, /drift, /atlas, /note. Agents: results-verifier, data-steward, reproducibility-checker, peer-reviewer, figure-smith, run-reader. rigor_tier (exploratory|pilot|confirmatory|publication) gates; pre-registration + leakage + confound-audit gates; never-self-grade; ## Block ABI with a validating block-lint hook.",
+      "author": {
+        "name": "bartek",
+        "email": "bartek.dan@gmail.com"
+      },
+      "category": "research",
+      "source": "./plugin"
+    }
+  ]
+}

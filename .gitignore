@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.idea/
+plugin/.orphaned_at
+sessions/stop-events-*.log

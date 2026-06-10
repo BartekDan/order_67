@@ -1,0 +1,35 @@
+{
+  "_comment": "Remote GPU host config for /execute (D-002: the harness owns scp→launch→poll→fetch). Copy to experiments/<exp>/host-config.json (GITIGNORE IT) and fill in. NEVER put a key, token, or password in this file — reference an environment variable name and let the run inherit it. The secret-scan in /data-audit will flag inline credentials.",
+  "host": "retrai.example.net",
+  "port": 22,
+  "user": "bartek",
+  "auth": {
+    "method": "ssh-key",
+    "key_env": "PROTEUS_SSH_KEY_PATH",
+    "_note": "Resolve the key path from $PROTEUS_SSH_KEY_PATH at runtime; do not inline the key."
+  },
+  "remote": {
+    "workdir": "/mnt/proteus/runs",
+    "python": "/mnt/proteus/.venv/bin/python",
+    "data_mount": "/mnt/proteus/data",
+    "env_passthrough": ["WANDB_API_KEY", "HF_TOKEN"],
+    "_note": "Credentials needed remotely are passed by NAME via env_passthrough, never written here."
+  },
+  "launch": {
+    "cmd_template": "cd {workdir}/{exp} && nohup {python} {script} --seed {seed} --config {config} > {logfile} 2>&1 &",
+    "sandbox": "none",
+    "_sandbox_note": "Open question (deferred): container/sandbox for agent-written code. 'none' trusts the manual RunPod flow; set to a container command to harden."
+  },
+  "poll": {
+    "interval_sec": 120,
+    "alive_check": "pgrep -f {script}",
+    "gpu_check": "nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader",
+    "disk_check": "df -h {workdir}",
+    "_note": "Stay under the cache TTL when polling; /execute backs off to longer intervals for long runs."
+  },
+  "fetch": {
+    "result_globs": ["runs/*/metrics.json", "runs/*/*.log", "results/*.npz", "figures/*.png"],
+    "dest": "results/{exp}/",
+    "_note": "Only reduced artifacts are fetched into the repo; the 7.4 TB raw tensors stay remote (two-tier data access)."
+  }
+}

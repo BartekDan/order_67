@@ -1,0 +1,30 @@
+{
+  "experiment": "EXP-spectral-length-bias",
+  "run": "RUN-001",
+  "node": "T-004",
+  "feature": {
+    "trajectory_resample_length": 32,
+    "wavelet": "db4",
+    "dwt_levels": 3,
+    "bands": ["A3", "D3", "D2", "D1"],
+    "per_model_normalization": "zscore"
+  },
+  "estimator": {
+    "kind": "logistic_regression",
+    "penalty": "l2",
+    "C": 0.5,
+    "fit_scope": "train_fold_only_inside_cv"
+  },
+  "split": {
+    "by": "qid",
+    "disjoint_files": true,
+    "n_models": 18,
+    "cv": "qid-grouped",
+    "variation_unit": "qid"
+  },
+  "metric": "balanced_accuracy",
+  "chance_baseline": 0.50,
+  "seeds": [0, 1, 2, 3, 4],
+  "ci": {"method": "bootstrap-BCa", "n_resamples": 2000, "variation_source": "split"},
+  "prereg_hash": "99469b2541cfa06a7607e32d1e392264b8a228cf6405d22c7ae0a69c04736b80"
+}

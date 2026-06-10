@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="280" viewBox="0 0 420 280" font-family="sans-serif">
+  <!-- fixture figure: pre-audit positive. held-out balanced accuracy vs the 0.50 chance line.
+       EXP-spectral-length-bias C-001. Axes: x=decision threshold, y=balanced accuracy. -->
+  <rect x="0" y="0" width="420" height="280" fill="white"/>
+  <text x="210" y="22" text-anchor="middle" font-size="14" font-weight="bold">C-001 held-out balanced accuracy (pre-audit)</text>
+  <!-- axes -->
+  <line x1="60" y1="240" x2="400" y2="240" stroke="black" stroke-width="1"/>
+  <line x1="60" y1="40" x2="60" y2="240" stroke="black" stroke-width="1"/>
+  <text x="230" y="270" text-anchor="middle" font-size="11">decision threshold</text>
+  <text x="20" y="140" text-anchor="middle" font-size="11" transform="rotate(-90 20 140)">balanced accuracy</text>
+  <!-- chance line at 0.50 (y maps 0.40->240, 0.80->40 => y = 240 - (bacc-0.40)*500) -->
+  <line x1="60" y1="190" x2="400" y2="190" stroke="#888" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="365" y="185" font-size="10" fill="#888">chance 0.50</text>
+  <!-- operating curve peaking at ~0.71 (y = 240-(0.71-0.40)*500 = 85) -->
+  <polyline points="60,190 120,150 180,110 240,85 300,100 360,135 400,170" fill="none" stroke="#1f77b4" stroke-width="2.5"/>
+  <circle cx="240" cy="85" r="4" fill="#1f77b4"/>
+  <text x="248" y="80" font-size="11" fill="#1f77b4">0.71</text>
+  <text x="70" y="58" font-size="10" fill="#c44">CAVEAT: confound-audit (answer length) RETRACTS this — see audit.md</text>
+</svg>

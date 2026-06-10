@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "order-67/experiment.schema.json",
+  "title": "experiment.json",
+  "description": "State machine for one experiment (the atomic unit of inquiry). Analog of order-66 spec.json. Only `version` and `rigor_tier` are universally required; everything else accretes per tier.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["version", "id", "status", "rigor_tier"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1, "description": "Schema/state version, bumped on each lifecycle transition." },
+    "id": { "type": "string", "pattern": "^EXP-[a-z0-9-]{1,30}$", "description": "Stable experiment ID, kebab-case." },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "registered", "running", "audited", "complete", "retracted", "abandoned"],
+      "description": "Lifecycle state. proposed→registered (after /register)→running (during /execute)→audited (verifier ran)→complete (PROMOTE + brief/paper) | retracted (confound-audit failed) | abandoned."
+    },
+    "rigor_tier": {
+      "type": "string",
+      "enum": ["exploratory", "pilot", "confirmatory", "publication"],
+      "description": "The load-bearing enum. Missing/unknown ⇒ treat as publication (RULE-0) and flag."
+    },
+    "hypothesis_ids": { "type": "array", "items": { "type": "string", "pattern": "^H-[0-9]{3}$" } },
+    "dataset_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "hash"],
+        "properties": {
+          "name": { "type": "string" },
+          "hash": { "type": "string", "description": "Immutable content hash (e.g. sha256 or dvc md5). Closes proteus's no-checksum gap (D-004)." },
+          "split": { "type": "string", "description": "How the train/test split is defined (e.g. 'by qid, disjoint files')." }
+        }
+      }
+    },
+    "seed_policy": {
+      "type": "object",
+      "properties": {
+        "seeds": { "type": "array", "items": { "type": "integer" } },
+        "n_justification": { "type": "string", "description": "Why this many seeds (power analysis). Required at confirmatory+." }
+      }
+    },
+    "prereg_hash": { "type": "string", "description": "sha256 of prereg.lock {primary_metric, splits, analysis_plan} + ISO timestamp. Required at confirmatory+." },
+    "quicklook": {
+      "type": "object",
+      "description": "The single inspectable signal Task 1 must produce (analog of order-66 demo). One of:",
+      "properties": {
+        "notebook": { "type": "string" },
+        "figure": { "type": "string" },
+        "metric": { "type": "string" }
+      }
+    },
+    "signal_confirmed": {
+      "type": "object",
+      "description": "The FROZEN pilot gate (CONVENTIONS §2): the pre-set threshold a positive must clear before scaling to confirmatory spend. results-verifier reads it as a fixed value, never a post-hoc bar. Distinct from triage's coarse Signal-validated routing heuristic.",
+      "properties": {
+        "metric": { "type": "string" },
+        "threshold": { "type": "number" },
+        "baseline": { "type": "number", "description": "The random/chance or baseline value the metric must beat." },
+        "direction": { "type": "string", "enum": ["greater", "less"] },
+        "met": { "type": "boolean" }
+      }
+    },
+    "depends_on": { "type": "array", "items": { "type": "string", "pattern": "^EXP-[a-z0-9-]+$" } },
+    "compute": {
+      "type": "object",
+      "description": "Remote-execution pointer; see templates/host-config.example.json.",
+      "properties": {
+        "host_config": { "type": "string", "description": "Path to host-config.json (gitignored; references creds via env, never inline)." },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "max_gpu_hours": { "type": "number" },
+            "max_usd": { "type": "number" },
+            "max_wallclock_min": { "type": "number" }
+          },
+          "description": "Hard cap for autonomous-within-budget tree search (D-003). /execute halts at the cap."
+        }
+      }
+    },
+    "created": { "type": "string", "format": "date" },
+    "updated": { "type": "string", "format": "date" },
+    "approved": { "type": "string", "description": "Named sign-off at the GO/PIVOT/KILL milestone gate." },
+    "fixture": { "type": "boolean", "description": "true marks a synthetic/example experiment (e.g. the acceptance test), excluded from real findings." }
+  }
+}

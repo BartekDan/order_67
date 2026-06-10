@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>order-67 harness — a friendly guide</title>
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --paper: #fbfaf6;
+    --rule: #c9c4b8;
+    --accent: #c75c1e;
+    --soft: #f1ece0;
+    --green: #3f7a3a;
+    --red: #b14040;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); font-size: 17px; line-height: 1.55; }
+  main { max-width: 780px; margin: 0 auto; padding: 48px 28px 96px; }
+  h1 { font-size: 38px; line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.01em; }
+  h1 + .subtitle { color: #6b6658; font-style: italic; margin-bottom: 36px; }
+  h2 { font-family: var(--sans); font-size: 22px; margin: 48px 0 12px; padding-top: 16px; border-top: 1px solid var(--rule); letter-spacing: -0.005em; }
+  h3 { font-family: var(--sans); font-size: 17px; margin: 28px 0 8px; color: var(--accent); }
+  p { margin: 0 0 14px; }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--soft); padding: 1px 6px; border-radius: 3px; }
+  pre { font-family: var(--mono); font-size: 13px; line-height: 1.5; background: #2a2722; color: #f6f0e0; padding: 14px 18px; border-radius: 6px; overflow-x: auto; margin: 14px 0 22px; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  .callout { background: var(--soft); border-left: 4px solid var(--accent); padding: 12px 16px; margin: 18px 0; border-radius: 0 4px 4px 0; }
+  .callout-good { border-color: var(--green); }
+  .callout-warn { border-color: var(--red); }
+  .callout strong { font-family: var(--sans); }
+  figure { margin: 28px 0; text-align: center; }
+  figcaption { font-size: 13px; color: #6b6658; font-style: italic; margin-top: 6px; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  hr.thin { border: 0; border-top: 1px dotted var(--rule); margin: 24px 0; }
+  .toc { background: var(--soft); padding: 14px 22px; border-radius: 4px; margin-bottom: 36px; font-family: var(--sans); font-size: 14px; }
+  .toc ol { margin: 0; padding-left: 22px; }
+  .toc a { color: var(--ink); text-decoration: none; }
+  .toc a:hover { color: var(--accent); text-decoration: underline; }
+  .skill-row { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; padding: 10px 0; border-bottom: 1px dotted var(--rule); }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-row .name { font-family: var(--mono); color: var(--accent); flex: 0 0 175px; font-size: 14px; }
+  .skill-row .desc { font-size: 15px; line-height: 1.5; }
+  .footer-note { font-size: 13px; color: #6b6658; margin-top: 60px; text-align: center; font-style: italic; }
+  svg { max-width: 100%; height: auto; }
+  svg text { font-family: var(--sans); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>order-67 — a friendly guide</h1>
+<p class="subtitle">For people who want a computer to help them do ML research the careful way — so the result still holds up a month later.</p>
+
+<div class="toc">
+  <strong>In this guide</strong>
+  <ol>
+    <li><a href="#what">What is this thing?</a></li>
+    <li><a href="#big-picture">The big picture — how a finding gets established</a></li>
+    <li><a href="#install">Getting set up (one-time)</a></li>
+    <li><a href="#first">Your first experiment, step by step</a></li>
+    <li><a href="#tiers">Four rigor tiers — picking how careful to be</a></li>
+    <li><a href="#skills">The skills, explained simply</a></li>
+    <li><a href="#skeptic">Why an independent skeptic matters</a></li>
+    <li><a href="#folders">What lives where on your computer</a></li>
+    <li><a href="#troubleshoot">When things look weird</a></li>
+  </ol>
+  <p style="margin: 12px 0 0; font-style: italic;">Developer reference (skip if you only want to <em>use</em> the harness):</p>
+  <ol start="10">
+    <li><a href="#dev-layout">Under the hood — repo layout</a></li>
+    <li><a href="#dev-abi">The <code>## Block</code> contract &amp; the linter</a></li>
+    <li><a href="#dev-skill">Anatomy of a skill</a></li>
+    <li><a href="#dev-agent">Anatomy of a subagent</a></li>
+    <li><a href="#dev-hooks">Hooks — events &amp; the trace</a></li>
+  </ol>
+</div>
+
+<!-- ───────────────────────────── 1 ───────────────────────────── -->
+<h2 id="what">1 · What is this thing?</h2>
+
+<p>You tell a computer assistant <em>what you want to find out</em>. Normally it just starts running experiments and reporting numbers. That's fine for a quick look — but for anything you'll stake a decision (or a paper) on, it tends to skip the careful parts. Like a scientist who announces a discovery before checking whether the "discovery" is just measuring something boring.</p>
+
+<p><strong>order-67 is a lab notebook the assistant follows — one that argues back.</strong> It makes the assistant:</p>
+<ul>
+  <li>write down the exact, <em>falsifiable</em> claim before running anything — and <strong>freeze</strong> the plan so it can't be quietly changed later to fit the data,</li>
+  <li>check the data for leaks and hidden confounds <em>before</em> trusting a number,</li>
+  <li>get an independent, skeptical second opinion before calling anything a finding,</li>
+  <li>write up the same verified result two ways: a paper-grade version, and a plain-English brief for whoever decides what to fund next.</li>
+</ul>
+
+<p>It's the research-world sibling of the <code>order-66</code> software harness. There, the goal was "ship working code." Here, the goal is "<strong>establish a claim that survives scrutiny.</strong>"</p>
+
+<figure>
+  <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg">
+    <!-- Left: without method -->
+    <text x="20" y="22" font-size="13" font-weight="600" fill="#b14040">Without a method</text>
+    <rect x="20" y="34" width="300" height="196" fill="#fbf2f2" stroke="#b14040" stroke-width="1.4" rx="6"/>
+    <text x="36" y="58" font-size="12">You: "does feature X detect Y?"</text>
+    <path d="M 52 70 L 52 88" stroke="#999" stroke-width="1.3" marker-end="url(#arr)"/>
+    <rect x="36" y="90" width="268" height="30" fill="#fff" stroke="#b14040" stroke-width="1.1" rx="4"/>
+    <text x="50" y="110" font-size="12">Runs it. "71% accuracy! 🎉"</text>
+    <path d="M 52 124 L 52 142" stroke="#999" stroke-width="1.3" marker-end="url(#arr)"/>
+    <rect x="36" y="144" width="268" height="74" fill="#fff" stroke="#b14040" stroke-width="1.1" rx="4"/>
+    <text x="50" y="164" font-size="12">A month later someone asks:</text>
+    <text x="50" y="180" font-size="12">"isn't that just answer length?"</text>
+    <text x="50" y="200" font-size="12" font-style="italic" fill="#b14040">…and the finding evaporates.</text>
+
+    <!-- Right: with order-67 -->
+    <text x="380" y="22" font-size="13" font-weight="600" fill="#3f7a3a">With a method (order-67)</text>
+    <rect x="380" y="34" width="300" height="196" fill="#f2f8f1" stroke="#3f7a3a" stroke-width="1.4" rx="6"/>
+    <text x="396" y="56" font-size="11">1. Freeze the claim &amp; the plan</text>
+    <path d="M 410 64 L 410 76" stroke="#999" stroke-width="1.2" marker-end="url(#arr)"/>
+    <text x="396" y="92" font-size="11">2. Audit the data (leaks?)</text>
+    <path d="M 410 100 L 410 112" stroke="#999" stroke-width="1.2" marker-end="url(#arr)"/>
+    <text x="396" y="128" font-size="11">3. Run it → 71%</text>
+    <path d="M 410 136 L 410 148" stroke="#999" stroke-width="1.2" marker-end="url(#arr)"/>
+    <text x="396" y="164" font-size="11">4. Try to <tspan font-style="italic">break</tspan> it: is it length?</text>
+    <path d="M 410 172 L 410 184" stroke="#999" stroke-width="1.2" marker-end="url(#arr)"/>
+    <text x="396" y="200" font-size="11" fill="#3f7a3a">5. It was length → <tspan font-weight="600">rejected now,</tspan></text>
+    <text x="396" y="216" font-size="11" fill="#3f7a3a" font-weight="600">not in front of reviewers later.</text>
+
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#999"/>
+      </marker>
+    </defs>
+  </svg>
+  <figcaption>Same 71%. One of them finds out <em>why</em> before it's too late. (This is a real example — see §7.)</figcaption>
+</figure>
+
+<p>You don't run any of this machinery yourself. You type a sentence; the assistant follows the recipe.</p>
+
+<!-- ───────────────────────────── 2 ───────────────────────────── -->
+<h2 id="big-picture">2 · The big picture — how a finding gets established</h2>
+
+<p>Think of a piece of research as a <em>production line</em>. Each station does one job, then passes the work along. You start by asking a question; the line turns it into a claim you can defend — plus the write-ups that explain it.</p>
+
+<figure>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+    <!-- conveyor -->
+    <rect x="20" y="186" width="680" height="14" fill="#d9d2c2" rx="3"/>
+    <g stroke="#a89e88" stroke-width="1">
+      <line x1="70" y1="186" x2="70" y2="200"/><line x1="180" y1="186" x2="180" y2="200"/>
+      <line x1="300" y1="186" x2="300" y2="200"/><line x1="420" y1="186" x2="420" y2="200"/>
+      <line x1="540" y1="186" x2="540" y2="200"/><line x1="650" y1="186" x2="650" y2="200"/>
+    </g>
+
+    <g font-size="11" text-anchor="middle">
+      <!-- question -->
+      <circle cx="50" cy="120" r="30" fill="#fff" stroke="#1d1d1f" stroke-width="1.4"/>
+      <text x="50" y="126" font-size="20">❓</text>
+      <text x="50" y="232" font-weight="600">your question</text>
+      <text x="50" y="246" fill="#6b6658">"does X detect Y?"</text>
+
+      <path d="M 86 132 L 116 132" stroke="#1d1d1f" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+      <!-- register -->
+      <rect x="118" y="96" width="92" height="58" fill="#fff" stroke="#c75c1e" stroke-width="1.4" rx="4"/>
+      <text x="164" y="118" font-weight="600" fill="#c75c1e" font-size="10.5">/triage·/register</text>
+      <text x="164" y="133" font-size="9.5" fill="#6b6658">freeze the claim</text>
+      <text x="164" y="146" font-size="9.5" fill="#6b6658">+ analysis plan</text>
+      <text x="164" y="232" font-weight="600">pre-register</text>
+      <text x="164" y="246" fill="#6b6658">(no take-backs)</text>
+
+      <path d="M 212 132 L 240 132" stroke="#1d1d1f" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+      <!-- run -->
+      <rect x="242" y="96" width="92" height="58" fill="#fff" stroke="#c75c1e" stroke-width="1.4" rx="4"/>
+      <text x="288" y="116" font-weight="600" fill="#c75c1e" font-size="10.5">/design·/plan</text>
+      <text x="288" y="130" font-weight="600" fill="#c75c1e" font-size="10.5">/execute</text>
+      <text x="288" y="144" font-size="9.5" fill="#6b6658">run on the GPU</text>
+      <text x="288" y="232" font-weight="600">get a number</text>
+      <text x="288" y="246" fill="#6b6658">on held-out data</text>
+
+      <path d="M 336 132 L 362 132" stroke="#1d1d1f" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+      <!-- audit -->
+      <rect x="364" y="96" width="92" height="58" fill="#fff" stroke="#c75c1e" stroke-width="1.4" rx="4"/>
+      <text x="410" y="116" font-weight="600" fill="#c75c1e" font-size="9.5">/confound-audit</text>
+      <text x="410" y="130" font-weight="600" fill="#c75c1e" font-size="10.5">/analyze</text>
+      <text x="410" y="144" font-size="9.5" fill="#6b6658">try to break it</text>
+      <text x="410" y="232" font-weight="600">screen confounds</text>
+      <text x="410" y="246" fill="#6b6658">+ honest stats</text>
+
+      <path d="M 458 132 L 484 132" stroke="#1d1d1f" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+      <!-- verify -->
+      <rect x="486" y="96" width="92" height="58" fill="#fff" stroke="#c75c1e" stroke-width="1.4" rx="4"/>
+      <text x="532" y="118" font-weight="600" fill="#c75c1e" font-size="9.5">results-verifier</text>
+      <text x="532" y="133" font-size="9.5" fill="#6b6658">independent</text>
+      <text x="532" y="146" font-size="9.5" fill="#6b6658">PROMOTE / REJECT</text>
+      <text x="532" y="232" font-weight="600">second opinion</text>
+      <text x="532" y="246" fill="#6b6658">(never self-grades)</text>
+
+      <path d="M 580 132 L 606 132" stroke="#1d1d1f" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+      <!-- done -->
+      <circle cx="650" cy="120" r="30" fill="#f2f8f1" stroke="#3f7a3a" stroke-width="1.6"/>
+      <text x="650" y="126" font-size="18">📄</text>
+      <text x="650" y="232" font-weight="600" fill="#3f7a3a">/paper + /brief</text>
+      <text x="650" y="246" fill="#6b6658">claim that holds</text>
+    </g>
+
+    <!-- side helpers -->
+    <g font-size="9.5" fill="#6b6658">
+      <rect x="242" y="24" width="92" height="22" fill="#fff" stroke="#6b6658" stroke-dasharray="2,2" rx="3"/>
+      <text x="288" y="39" text-anchor="middle">/data-audit (leaks?)</text>
+      <path d="M 288 46 L 288 94" stroke="#6b6658" stroke-dasharray="2,2"/>
+
+      <rect x="486" y="24" width="92" height="22" fill="#fff" stroke="#6b6658" stroke-dasharray="2,2" rx="3"/>
+      <text x="532" y="39" text-anchor="middle">/drift (tidy up)</text>
+      <path d="M 532 46 L 532 94" stroke="#6b6658" stroke-dasharray="2,2"/>
+    </g>
+
+    <defs>
+      <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#1d1d1f"/>
+      </marker>
+    </defs>
+  </svg>
+  <figcaption>The unit that moves down the line is one <strong>experiment</strong>, governed by one <strong>falsifiable hypothesis</strong>.</figcaption>
+</figure>
+
+<div class="callout">
+  <strong>Three gates the line will not let you skip.</strong> ① <em>Pre-registration</em>: the claim and plan are frozen before any result exists, so you can't quietly move the goalposts. ② <em>Leakage audit</em>: the data is checked for train/test contamination. ③ <em>Confound-audit</em>: every positive result must survive an attempt to explain it away. Plus one rule — the thing that ran the experiment never grades its own result.
+</div>
+
+<!-- ───────────────────────────── 3 ───────────────────────────── -->
+<h2 id="install">3 · Getting set up (one-time)</h2>
+
+<h3>Step A — install Claude Code</h3>
+<p>order-67 runs inside Claude Code (the terminal assistant). If you already use it, you're done. If not, install it first and confirm <code>claude</code> opens.</p>
+
+<h3>Step B — install the order-67 harness</h3>
+<p>The harness is a <em>plugin</em>: a folder of recipes Claude Code loads. Point your Claude Code plugin config at the <code>order-67</code> folder (the same way <code>order-66</code> is installed). Once it's registered, typing <code>/</code> will offer <code>/triage</code>, <code>/register</code>, and the rest in autocomplete.</p>
+
+<div class="callout callout-warn">
+  <strong>Before your first run on a shared repo:</strong> the harness's <code>/data-audit</code> scans for secrets committed to the code. If it flags an API key, rotate it — deleting the line isn't enough once it's in git history.
+</div>
+
+<!-- ───────────────────────────── 4 ───────────────────────────── -->
+<h2 id="first">4 · Your first experiment, step by step</h2>
+
+<p>You mostly type one sentence at a time and let the assistant drive. A typical run:</p>
+
+<h3>Step 1 — ask the question</h3>
+<pre><code>/triage "Does a wavelet feature of the H-Neuron activations
+         tell hallucinated answers from faithful ones?"</code></pre>
+<p>The assistant classifies it (is this a quick probe? a full experiment? a replication?) and suggests <em>how careful</em> to be — the rigor tier (§5). It writes nothing until you say go.</p>
+
+<h3>Step 2 — pre-register it</h3>
+<p><code>/register</code> writes down the falsifiable claim ("…shall reach balanced accuracy ≥ 0.65 on a held-out, question-disjoint split"), names the confounds you already worry about (answer length!), and <strong>freezes</strong> the plan with a hash. From here on, changing the metric is a deviation the system will flag — not a silent edit.</p>
+
+<h3>Step 3 — design &amp; audit the data</h3>
+<p><code>/design-experiment</code> writes the plan, starting with the single number you'll look at first. <code>/data-audit</code> then checks the data is split honestly (by question, not by row), nothing leaks from test into train, and no secrets are lying around. If a justification is blank, it stops you.</p>
+
+<h3>Step 4 — run it</h3>
+<p><code>/plan-runs</code> lays out the runs as a small tree; <code>/execute</code> sends them to your GPU box, watches them, and pulls the results back — capturing the seed, config, and data hash so the run can be reproduced.</p>
+
+<h3>Step 5 — try to break your own result</h3>
+<p>If a result looks positive, <code>/confound-audit</code> runs automatically: it shuffles the labels, checks whether a boring variable (like answer length) explains the effect, and re-runs with a different statistic. <code>/analyze</code> then computes honest statistics — effect sizes and confidence intervals, not lonely p-values.</p>
+
+<h3>Step 6 — get the independent verdict</h3>
+<p>A separate, skeptical reviewer (the <em>results-verifier</em>) reads only the logged numbers and returns one of: <code>PROMOTE</code>, <code>PROMOTE-WITH-CAVEAT</code>, <code>RERUN</code>, <code>REJECT</code>, or <code>BLOCKED</code>. The assistant that ran the experiment never gets to grade it.</p>
+
+<h3>Step 7 — write it up (two ways)</h3>
+<p>On a <code>PROMOTE</code>, <code>/paper</code> drafts a paper-grade write-up (every claim carries its statistics) and <code>/brief</code> drafts a one-page, plain-English brief for management — a bottom line, a letter grade, honest caveats, and a "here's what a skeptic will say, and here's our answer" handbook.</p>
+
+<div class="callout callout-good">
+  <strong>You can stop anywhere.</strong> A clean <em>negative</em> result is a finding too — order-67 records nulls instead of burying them.
+</div>
+
+<!-- ───────────────────────────── 5 ───────────────────────────── -->
+<h2 id="tiers">5 · Four rigor tiers — picking how careful to be</h2>
+
+<p>Not every question deserves a six-month confirmatory study, and not every result should be trusted because it "looked converged." order-67 has one dial — the <strong>rigor tier</strong> — and it decides how many checks apply. Each tier adds to the one below; you never get production-grade ceremony forced onto a quick look.</p>
+
+<figure>
+  <svg viewBox="0 0 700 210" xmlns="http://www.w3.org/2000/svg">
+    <g font-size="11">
+      <rect x="20" y="30" width="150" height="160" fill="#f6f4ee" stroke="#c9c4b8" rx="5"/>
+      <text x="95" y="50" text-anchor="middle" font-weight="600" fill="#c75c1e">exploratory</text>
+      <text x="95" y="70" text-anchor="middle" font-size="10" fill="#6b6658">"is there a pulse?"</text>
+      <text x="32" y="92" font-size="10">• runs &amp; no leak</text>
+      <text x="32" y="108" font-size="10">• one seed OK</text>
+      <text x="32" y="124" font-size="10">• fast, cheap</text>
+
+      <rect x="180" y="30" width="150" height="160" fill="#f3f1ea" stroke="#c9c4b8" rx="5"/>
+      <text x="255" y="50" text-anchor="middle" font-weight="600" fill="#c75c1e">pilot</text>
+      <text x="255" y="70" text-anchor="middle" font-size="10" fill="#6b6658">"worth scaling?"</text>
+      <text x="192" y="92" font-size="10">+ held-out split</text>
+      <text x="192" y="108" font-size="10">+ length-confound</text>
+      <text x="192" y="124" font-size="10">&nbsp;&nbsp;screen on a hit</text>
+
+      <rect x="340" y="30" width="150" height="160" fill="#efece3" stroke="#c9c4b8" rx="5"/>
+      <text x="415" y="50" text-anchor="middle" font-weight="600" fill="#c75c1e">confirmatory</text>
+      <text x="415" y="70" text-anchor="middle" font-size="10" fill="#6b6658">"is it real?"</text>
+      <text x="352" y="92" font-size="10">+ many seeds + CI</text>
+      <text x="352" y="108" font-size="10">+ multiple-test fix</text>
+      <text x="352" y="124" font-size="10">+ full confound</text>
+      <text x="352" y="140" font-size="10">&nbsp;&nbsp;audit (4 probes)</text>
+
+      <rect x="500" y="30" width="180" height="160" fill="#eae6da" stroke="#c9c4b8" rx="5"/>
+      <text x="590" y="50" text-anchor="middle" font-weight="600" fill="#c75c1e">publication</text>
+      <text x="590" y="70" text-anchor="middle" font-size="10" fill="#6b6658">"ship it to reviewers"</text>
+      <text x="512" y="92" font-size="10">+ reproducibility</text>
+      <text x="512" y="108" font-size="10">&nbsp;&nbsp;evidence</text>
+      <text x="512" y="124" font-size="10">+ datasheet + card</text>
+      <text x="512" y="140" font-size="10">+ NeurIPS checklist</text>
+    </g>
+    <path d="M 30 18 L 670 18" stroke="#3f7a3a" stroke-width="1.4" marker-end="url(#arr3)"/>
+    <text x="350" y="13" text-anchor="middle" font-size="10" fill="#3f7a3a">each tier ADDS to the one before — nothing is dropped going right</text>
+    <defs>
+      <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#3f7a3a"/>
+      </marker>
+    </defs>
+  </svg>
+  <figcaption>One dial, four notches. A replication study is a routing choice, not a fifth tier.</figcaption>
+</figure>
+
+<div class="callout">
+  <strong>The safety rule:</strong> if the tier (or a seed, or the frozen plan) is <em>missing</em>, the harness assumes the <em>strictest</em> tier and says so out loud. A result with no metadata is treated as suspicious, never waved through.
+</div>
+
+<!-- ───────────────────────────── 6 ───────────────────────────── -->
+<h2 id="skills">6 · The skills, explained simply</h2>
+
+<p>Each <code>/word</code> is one station. You rarely call them all by hand — the assistant chains them — but here's what each does.</p>
+
+<div class="skill-row"><div class="name">/triage</div><div class="desc">Sorts your question into the right path and suggests a rigor tier. The "where does this go?" station.</div></div>
+<div class="skill-row"><div class="name">/register</div><div class="desc">Writes the falsifiable hypothesis and <strong>freezes</strong> the plan with a hash. The pre-registration gate.</div></div>
+<div class="skill-row"><div class="name">/design-experiment</div><div class="desc">Writes the method — starting with the one number you'll eyeball first — plus the data &amp; compute plan and the threats to validity.</div></div>
+<div class="skill-row"><div class="name">/data-audit</div><div class="desc">Checks for leakage and confounds and scans for committed secrets. Stops you on a blank justification.</div></div>
+<div class="skill-row"><div class="name">/plan-runs</div><div class="desc">Lays out the runs as a small tree, with a budget cap and the first task being the quick "is there a pulse?" look.</div></div>
+<div class="skill-row"><div class="name">/conflicts</div><div class="desc">Checks this experiment against project-wide rules (e.g. "never import the test set") before spending GPU.</div></div>
+<div class="skill-row"><div class="name">/execute</div><div class="desc">Runs the experiments on your remote GPU box, watches them, fetches results, and records how to reproduce each run.</div></div>
+<div class="skill-row"><div class="name">/confound-audit</div><div class="desc">Tries to explain away every positive result (permutation null, nuisance screen, statistic swap). The "try to break it" station.</div></div>
+<div class="skill-row"><div class="name">/analyze</div><div class="desc">Computes honest statistics (effect size + confidence interval + multiple-test correction) and commissions clean figures.</div></div>
+<div class="skill-row"><div class="name">/verify-claim</div><div class="desc">Asks the independent reviewer for a verdict — on demand, when you want to re-check.</div></div>
+<div class="skill-row"><div class="name">/paper</div><div class="desc">Drafts the paper-grade write-up; every claim carries its statistics. Runs a NeurIPS-style checklist on itself.</div></div>
+<div class="skill-row"><div class="name">/brief</div><div class="desc">Drafts the plain-English brief for management: bottom line, letter grade, caveats, and a pushback handbook.</div></div>
+<div class="skill-row"><div class="name">/drift</div><div class="desc">Tidies up: consolidates notes, flags figures whose finding was retracted, chases overdue "rigor debt."</div></div>
+<div class="skill-row"><div class="name">/note</div><div class="desc">Jots a timestamped thought into today's notes without interrupting the run.</div></div>
+
+<!-- ───────────────────────────── 7 ───────────────────────────── -->
+<h2 id="skeptic">7 · Why an independent skeptic matters</h2>
+
+<p>The single most valuable thing order-67 does is refuse to let the assistant grade its own homework. The thing that ran the experiment is <em>motivated</em> to see a result; a separate reviewer, reading only the logged numbers, is not.</p>
+
+<p>Here's a real one, baked into the repo as a worked example (<code>examples/spectral-length-bias/</code>):</p>
+
+<div class="callout callout-warn">
+  <strong>The 71% that wasn't.</strong> A wavelet feature of neuron activations seemed to detect hallucinated answers — <strong>71% balanced accuracy</strong> on a held-out, honestly-split set. The data audit was clean: no leakage. It looked like a finding.
+</div>
+
+<p>Then the confound-audit went to work. Shuffling the labels confirmed the feature was predicting <em>something</em> (good). But the nuisance screen asked a boring question: <em>are hallucinated answers just longer?</em> They were — 142 tokens versus 38 — and the feature was ~0.8 correlated with length. Control for length, and the 71% collapsed to <strong>53%</strong> — chance. Swap in a length-blind statistic and the effect vanished entirely.</p>
+
+<div class="callout callout-good">
+  <strong>Verdict: REJECT.</strong> The reviewer marked the claim "not supported — the detector detects answer length, not hallucination," and the experiment's status flipped to <em>retracted</em>. The harness reached, by mechanism and in minutes, the same conclusion the human team had reached the hard way.
+</div>
+
+<p>Note the two gates did different jobs: <code>/data-audit</code> said <strong>PASS</strong> (the split really was clean), while <code>/confound-audit</code> said the result doesn't survive. Leakage and confounding are different diseases — order-67 checks for both.</p>
+
+<!-- ───────────────────────────── 8 ───────────────────────────── -->
+<h2 id="folders">8 · What lives where on your computer</h2>
+
+<p>Inside a research project, the harness grows a tidy set of folders. You can read any of these in a text editor.</p>
+
+<pre><code>your-project/
+  experiments/&lt;exp&gt;/        one folder per experiment
+    experiment.json          the experiment's "state" (tier, status, hashes)
+    hypothesis.md            the falsifiable claim(s)
+    prereg.lock              the frozen plan (hashed — tamper-evident)
+    preregistration.md       the readable pre-registration
+    design.md  runs.md       the method and the run tree
+    analysis.md  audit.md     the stats, and the confound-audit
+    verdict.md               the independent reviewer's call
+    runs/&lt;RUN&gt;/              each run's seed, config, metrics, logs
+  results/&lt;exp&gt;/             figures + machine-readable stats
+  trace/&lt;exp&gt;.md             append-only log of every claim → file:value
+  FINDINGS.md                short index of what's been established
+  RIGOR_DEBT.md              shortcuts you owe, with due dates
+  sessions/                  daily notes &amp; metrics</code></pre>
+
+<p>Two ideas worth knowing: the <strong>trace</strong> is the paper trail — every figure and number can be tracked back to the run that produced it. And the <strong>findings index</strong> is deliberately short, so the project's memory doesn't rot into a swamp.</p>
+
+<!-- ───────────────────────────── 9 ───────────────────────────── -->
+<h2 id="troubleshoot">9 · When things look weird</h2>
+
+<h3>"The skills don't show up when I type /"</h3>
+<p>The plugin isn't registered. Re-check Step B; confirm Claude Code lists <code>order-67</code> among its plugins, then restart the session.</p>
+
+<h3>"It refuses my hypothesis"</h3>
+<p><code>/register</code> rejects claims that can't be proven wrong ("the samples look good"). Restate it as a number on held-out data: "…shall reach <em>metric</em> ≥ <em>threshold</em> on the held-out split." If you can't, that's a sign the question isn't ready to test yet.</p>
+
+<h3>"The verifier said REJECT (or my result got retracted)"</h3>
+<p>That's the system working, not breaking. Read <code>verdict.md</code> — it cites exactly which check failed and where. Usually it's a confound (like length) or a missing control. Fix the design, re-register if the plan changed, and run again.</p>
+
+<h3>"It says BLOCKED, not REJECT"</h3>
+<p>Different thing. <code>REJECT</code> = the number exists but doesn't support the claim. <code>BLOCKED</code> = the number was never actually logged, so nothing can be judged. Log the metric and re-run.</p>
+
+<h3>"A run won't promote at pilot — it wants a confound screen"</h3>
+<p>By design. Pilot is the gate to expensive confirmatory work, so a positive there must at least pass the quick length/permutation check before you're allowed to spend big. It's protecting your GPU budget from a mirage.</p>
+
+<h3>"Files I didn't ask for keep appearing"</h3>
+<p>That's the trace hook recording provenance as you write. It's append-only and harmless; <code>/drift</code> keeps it tidy.</p>
+
+<!-- ═══════════════════ developer reference ═══════════════════ -->
+<h2 id="dev-layout">10 · Under the hood — repo layout</h2>
+<p>For people extending the harness itself. The repo is a single-plugin <em>marketplace</em>: the marketplace manifest sits at the root, and the installable plugin lives in <code>plugin/</code> (the same shape as order-66, so <code>claude plugin install …@order-67</code> works).</p>
+<pre><code>order-67/                          the marketplace repo
+  .claude-plugin/marketplace.json  exposes the plugin (source: ./plugin)
+  README.md  ROADMAP.md  docs/     repo-level docs (this guide lives here)
+  examples/spectral-length-bias/   the worked acceptance experiment
+  plugin/                          the installable plugin (copied to cache on install)
+    .claude-plugin/plugin.json     manifest + hook wiring
+    CONVENTIONS.md                 the contract everything obeys
+    skills/&lt;name&gt;/SKILL.md         one folder per skill (+ templates/)
+    agents/&lt;name&gt;/AGENT.md         the 6 subagents
+    hooks/                          update-trace.sh, block-lint.sh, …
+    templates/                      rulebook, schemas, host-config example</code></pre>
+<p>Install it at user scope with:</p>
+<pre><code>claude plugin marketplace add /path/to/order-67
+claude plugin install order-67-research-harness@order-67   # --scope user (default)</code></pre>
+
+<h2 id="dev-abi">11 · The <code>## Block</code> contract &amp; the linter</h2>
+<p>Skills talk to each other by emitting a named markdown block (e.g. <code>## Verdict</code>) whose first lines are <em>mechanical</em> — <code>- Field: value</code> — so the next skill can read them by grep. The required fields per block live in <code>hooks/block-schemas.tsv</code>, and <code>hooks/block-lint.sh</code> checks them: not just that a field is <em>present</em>, but that load-bearing values are valid (a verdict is one of the five allowed strings; the leakage justifications aren't blank). It runs as an advisory hook on every write, and as a hard gate inside <code>/execute</code> — so a typo can't waste a GPU run.</p>
+
+<h2 id="dev-skill">12 · Anatomy of a skill</h2>
+<p>Every <code>SKILL.md</code> has frontmatter (<code>name</code>, <code>description</code>, <code>whenToUse</code>) then two parts: <strong>Static</strong> (Summary, Preconditions, Parameters, the exact output block, Hard constraints, Common mistakes) and <strong>Dynamic</strong> (template references and <code>!{bash}</code> snippets the assistant runs at the moment the skill fires). The constraints and common-mistakes sections are where the rigor lives.</p>
+
+<h2 id="dev-agent">13 · Anatomy of a subagent</h2>
+<p>The six agents (<code>results-verifier</code>, <code>data-steward</code>, <code>reproducibility-checker</code>, <code>peer-reviewer</code>, <code>figure-smith</code>, <code>run-reader</code>) are isolated reviewers with their own tools and model. Crucially, the graders are <em>write-disabled</em>: the verifier can read and reason but cannot edit the experiment it's judging. That's how "never self-grade" is enforced structurally, not just asked for politely.</p>
+
+<h2 id="dev-hooks">14 · Hooks — events &amp; the trace</h2>
+<p>Two events are wired in <code>plugin.json</code>. On every file write under <code>experiments/</code> or <code>results/</code>, <code>update-trace.sh</code> appends a provenance line and <code>block-lint.sh</code> checks any block in the file. On session stop, a logger records the event (automatic consolidation is deliberately left manual for now — run <code>/drift</code> yourself, so missing tidy-up is visible rather than silently skipped). The hooks use no absolute paths and don't depend on <code>jq</code>, so the plugin is portable.</p>
+
+<p class="footer-note">order-67 research harness · "Proteus Harness" · a careful lab notebook that argues back.</p>
+
+</main>
+</body>
+</html>

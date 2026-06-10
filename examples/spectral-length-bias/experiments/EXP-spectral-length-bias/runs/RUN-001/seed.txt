@@ -1,0 +1,3 @@
+0,1,2,3,4
+# Headline confirmatory seed sweep (T-004). The 95% CI variation source is the qid-split
+# (bootstrap-BCa over qids); these seeds confirm run-to-run stability of the point estimate.

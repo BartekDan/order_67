@@ -1,0 +1,41 @@
+{
+  "version": 4,
+  "id": "EXP-spectral-length-bias",
+  "status": "retracted",
+  "rigor_tier": "confirmatory",
+  "hypothesis_ids": ["H-001"],
+  "dataset_refs": [
+    {
+      "name": "proteus-hneurons-qa",
+      "hash": "sha256:7c1d3e9a4b86f0d2a55e1c47b9f0a2d6e8c41f73b2a9d05e6c8147af3b0d9e2c",
+      "split": "by qid, disjoint files (train/held-out share no question id); 18 models"
+    }
+  ],
+  "seed_policy": {
+    "seeds": [0, 1, 2, 3, 4],
+    "n_justification": "k=5 seeds, power-justified: to detect a balanced-accuracy delta of 0.10 over the 0.50 chance baseline at alpha=0.05 with power=0.8 on the qid-split variation, k>=4 is required; k=5 chosen for margin (RULE-7/RULE-8). Variation source for the headline CI is the qid-split (bootstrap over qids), seeds confirm stability."
+  },
+  "prereg_hash": "99469b2541cfa06a7607e32d1e392264b8a228cf6405d22c7ae0a69c04736b80",
+  "quicklook": {
+    "metric": "results/EXP-spectral-length-bias/RUN-001/metrics.json:held_out_balanced_accuracy"
+  },
+  "signal_confirmed": {
+    "metric": "balanced_accuracy",
+    "threshold": 0.65,
+    "baseline": 0.50,
+    "direction": "greater",
+    "met": true
+  },
+  "compute": {
+    "host_config": "experiments/EXP-spectral-length-bias/host-config.json",
+    "budget": {
+      "max_gpu_hours": 12,
+      "max_usd": 36,
+      "max_wallclock_min": 720
+    }
+  },
+  "created": "2026-05-18",
+  "updated": "2026-05-29",
+  "approved": "fixture — no human sign-off (synthetic acceptance experiment)",
+  "fixture": true
+}

@@ -1,0 +1,30 @@
+# prereg.lock — EXP-spectral-length-bias  (DO NOT EDIT; append-only via /register --amend)
+# Human preamble (NOT hashed): tier, who, why. Free text above the BEGIN marker.
+# Tier: confirmatory. Filled by: research-harness (fixture). Why: reproduce the proteus
+# Eksperyment-1 spectral length-bias self-retraction end-to-end through the harness.
+rigor_tier: confirmatory
+git_commit: a1f4c09
+supersedes: none
+
+--- BEGIN PREREG BODY ---
+timestamp_iso: 2026-05-18T09:12:04Z
+primary_metric: balanced_accuracy
+splits: by qid, disjoint files (train/held-out share no question id); n=18 models is the cross-model unit
+analysis_plan: |
+  Per H-Neuron, resample its activation trajectory x[1..T] over an answer's tokens to fixed
+  length 32, then take a Daubechies-4 DWT (3 levels) yielding 4 wavelet-band energies per
+  (sample, layer, neuron). Estimator: L2-regularized logistic classifier on the wavelet-band
+  energy features, fit on the TRAIN fold only (reducers/standardizers fit inside the CV loop on
+  train folds, never on combined or held-out data; RULE-10). Score balanced_accuracy on the
+  qid-disjoint held-out fold; chance baseline = 0.50. Variation source = qid-split; 95% CI by
+  bootstrap BCa over qids, n_resamples=2000. Effect size = balanced-accuracy delta over chance.
+  Multiple comparisons: ~50 H-neurons x 4 bands x 18 models = ~3600 tests; correction =
+  Benjamini-Hochberg (FDR), N=3600, adjusted primary statistic reported. Seeds = [0,1,2,3,4]
+  (k=5, power-justified: detect bal-acc delta 0.10 at alpha=0.05, power=0.8). Mandatory
+  confound-audit on any positive (RULE-6): label-permutation null + answer-length nuisance
+  screen + length-invariant scattering statistic-swap + drop-fixed-length-32 alt-preprocessing,
+  thresholds frozen in the audit header before any probe is computed.
+--- END PREREG BODY ---
+
+# Below the END marker (NOT hashed): the computed hash, recorded for human convenience.
+prereg_sha256: 99469b2541cfa06a7607e32d1e392264b8a228cf6405d22c7ae0a69c04736b80

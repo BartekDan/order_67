@@ -1,0 +1,47 @@
+/*
+ * Brief palette for /brief output (the layman R&D-management deliverable).
+ * Adapted from order-66's showcase palette (rust/ochre/olive/teal on paper) into a calmer,
+ * boardroom-appropriate register: the paper/ink base is retained for print-friendliness, the
+ * accent set is desaturated so a grade letter or a HONEST-CAVEAT callout reads as signal, not
+ * decoration. Semantic colours (--status-*) are the load-bearing additions: the finding-status
+ * table and the grade chip map directly onto them, so a stakeholder skimming on a phone gets the
+ * verdict from colour before reading a word. No external stylesheet — this block is inlined into
+ * brief.html.tpl's <style> verbatim (D-006: single self-contained file).
+ *
+ * If you change a token here, the matching class in brief.html.tpl must still resolve — grep the
+ * template for var(--<token>) before renaming.
+ */
+:root {
+  /* --- base surfaces & text --- */
+  --ink:        #11161c;   /* body text, near-black with a cool cast */
+  --paper:      #f6f3ec;   /* page background, warm off-white */
+  --cream:      #fbf8f1;   /* card / callout fill */
+  --slate:      #2c333c;   /* secondary text, sub-headings */
+  --grey:       #6b7177;   /* meta text, captions, labels */
+  --line:       #1a1f25;   /* hard rules */
+  --soft-line:  rgba(17, 22, 28, 0.14);  /* hairlines, table borders */
+
+  /* --- brand accents (desaturated from showcase) --- */
+  --rust:       #b8431f;   /* primary accent, BLUF rule, key numbers */
+  --rust-dark:  #872f12;   /* inline code, hover */
+  --ochre:      #c89212;   /* attention / CHECKPOINT callout */
+  --olive:      #45591f;   /* affirmative, "holds up" */
+  --teal:       #1d5867;   /* technical accent, DEFINITION callout */
+
+  /* --- semantic status (drive the finding→status→meaning table + grade chip) --- */
+  --status-strong:  #2f6b3a;   /* finding holds: large effect, consistent */
+  --status-strong-bg: #e7f0e6;
+  --status-caveat:  #9a6a05;   /* holds with a caveat / narrow scope */
+  --status-caveat-bg: #f6ecd2;
+  --status-weak:    #8a2f12;   /* underpowered / did not survive audit */
+  --status-weak-bg: #f4e1da;
+  --status-null:    #455a6b;   /* clean null (a result, not a failure — RULE-8) */
+  --status-null-bg: #e4eaef;
+
+  /* --- grade chip backgrounds (letter grade A–F, question 2) --- */
+  --grade-a: #2f6b3a;
+  --grade-b: #4c7a2e;
+  --grade-c: #9a6a05;
+  --grade-d: #b8431f;
+  --grade-f: #872f12;
+}
