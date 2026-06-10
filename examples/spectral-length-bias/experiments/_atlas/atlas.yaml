@@ -1,0 +1,22 @@
+# Hand-curated ledger — the /atlas source of truth. Edit this, then run /atlas.
+# This project is the harness's worked ACCEPTANCE FIXTURE (every artifact fixture: true).
+project: "spectral-length-bias (order-67 acceptance fixture)"
+regime: "synthetic re-enactment of the proteus Eksperyment-1 self-retraction — proves the confound-audit gate"
+you_are_here:
+  node: EXP-spectral-length-bias
+  summary: "C-001 RETRACTED at confirmatory tier — confound-audit Survives: NO (answer-length confound); the fixture is complete and frozen as the worked example."
+  next: "(if this were live) re-register a length-robust hypothesis: PRIMARY metric = length-controlled balanced accuracy, new prereg_hash (verdict.md Required fixes)"
+nodes:
+  - id: EXP-spectral-length-bias
+    kind: experiment
+    lifecycle: dead-end
+    parent: null
+    verdict: "REJECT / retracted — held-out bal-acc 0.71 was an answer-length confound (feature~length ρ=0.79); length-regressed bal-acc 0.53, CI [0.49,0.57] ≋ chance. The 'hallucination detector' detected answer length."
+    why: "Probe-1 permutation-null PASSED (z=6.2) — the classifier predicts SOMETHING; probes 2–4 (nuisance screen, statistic-swap, alt-preprocessing) all FAILED — it predicts LENGTH. Lesson kept: a permutation PASS is necessary, never sufficient; pre-name the nuisance variables and gate every positive on the four-probe audit (RULE-6). /data-audit passing while /confound-audit fails is the exact distinction this fixture exists to teach."
+    links:
+      verdict: experiments/EXP-spectral-length-bias/verdict.md
+      audit: experiments/EXP-spectral-length-bias/audit.md
+      stats: results/EXP-spectral-length-bias/stats.json
+cross_cutting:
+  - "fixture: true on every artifact — excluded from real findings; no human sign-off"
+  - "qid-disjoint split is CLEAN (data-audit PASS) — the failure is a VALIDITY confound, not leakage"

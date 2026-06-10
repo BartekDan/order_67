@@ -12,6 +12,9 @@ ATLAS.html is a pure presentation of it. Re-run after every ATLAS.md regeneratio
 
     python3 render_html.py <path/to/ATLAS.md>     # writes sibling ATLAS.html
 
+NOTE: the ATLAS.md h1 must be PLAIN TEXT (no raw HTML) — inline() escapes raw tags; the
+renderer itself italicizes the "(deep dossier)" suffix.
+
 Parses exactly the markdown subset the atlas-deep template emits: YAML frontmatter, #/##/###/####
 headings, fenced code blocks, pipe tables, bullet lists (one nesting level), blockquotes, hrs,
 raw <a id=…> anchor lines, and inline **bold** / *italic* / `code` / [links](…).
