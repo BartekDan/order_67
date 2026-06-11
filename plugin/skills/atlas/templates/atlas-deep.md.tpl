@@ -1,7 +1,7 @@
 <!--
-  Template-rev: 1.0   (bump on ANY structural change; /atlas escalates to --full on mismatch)
-  ATLAS.md template for order-67 /atlas v2 — THE deep single-place dossier for a research
-  project (the science + the mechanics). Sits beside STATUS.md (the thin board atlas.py renders
+  Template-rev: 2.0   (bump on ANY structural change; /atlas escalates to --full on mismatch)
+  ATLAS.md template for order-67 /atlas v3 — THE deep single-place dossier for a research
+  project (the science + the mechanics + the LAYMAN TRACK). Sits beside STATUS.md (the thin board atlas.py renders
   from atlas.yaml) and is rendered to ATLAS.html by skills/atlas/render_html.py.
   Placeholders in {{DOUBLE_BRACES}}; repeat {{#EXPERIMENTS}}...{{/EXPERIMENTS}} per experiment,
   ordered by the exploration tree (parents before children, then ledger order).
@@ -36,10 +36,27 @@
   hash). No citation -> no claim. HONESTY: never invent; unverifiable -> "unverified — inferred
   from <source>"; unknown -> "(unknown)". Numbers come from artifacts, never from memory.
 
-  DIAGRAMS: plain ASCII in fenced code blocks, <= ~25 lines. The exploration tree is COPIED
-  VERBATIM from the freshly regenerated STATUS.md (single source = atlas.yaml) — never re-drawn.
+  THE LAYMAN BAR (v3, binding, enforced by the layman-judge agent): every "In plain words"
+  section must let an intelligent reader with ZERO scientific or technical background genuinely
+  follow the SAME ground the expert sections cover: what question was asked, what was actually
+  done step by step (mirroring the pipeline walk's numbering 1:1), what every reported number
+  means and where it comes from — including, in plain words, whether each pass/fail rule was
+  promised BEFORE the data was seen or chosen after — and why a result was believed, doubted, or
+  thrown out. Rules: no unexplained term, ever — any unavoidable scientific or technical word
+  gets an everyday explanation in parentheses at FIRST use; analogies must carry the actual
+  step, not just the vibe; never reference the expert sections; as DETAILED as the mechanics —
+  a translation, not a teaser. Headings MUST start with "In plain words" (the renderer keys its
+  panel styling on that prefix; the layman-judge locates sections by it). A retraction story is
+  layman GOLD — tell it straight: what looked true, what test caught it, what the lesson was.
 
-  LENGTH: per-experiment section target 100–300 lines.
+  DIAGRAMS (v3): declarative ```flow / ```graph DSL blocks (grammar + binding authoring rules in
+  templates/diagram-dsl.md) — render_html.py lays them out deterministically as SVG. One idea
+  per diagram, <= ~15 nodes, EVERY edge labeled with what moves. ASCII art is retired for
+  diagrams; plain ``` blocks remain for genuinely textual content. EXCEPTION: the exploration
+  tree stays the VERBATIM ASCII block copied from the freshly regenerated STATUS.md (single
+  source = atlas.yaml) — never re-drawn, never converted.
+
+  LENGTH: per-experiment section target 130–350 lines including the layman section.
 -->
 ---
 generated: atlas
@@ -48,7 +65,7 @@ generated_at: {{GENERATED_AT}}
 project: {{PROJECT}}
 git_anchor: {{GIT_ANCHOR}}
 regen_mode: {{REGEN_MODE}}
-template_rev: "1.0"
+template_rev: "2.0"
 ---
 
 # {{PROJECT}} — ATLAS (deep dossier)
@@ -60,6 +77,18 @@ template_rev: "1.0"
 > bundles. The thin "where are we" board is [STATUS.md](STATUS.md) (rendered from `atlas.yaml`).
 > Generated {{GENERATED_AT}} at commit {{GIT_ANCHOR}}. Do not hand-edit — re-run `/atlas`
 > (incremental per experiment, `--full` for a complete rebuild).
+
+## In plain words — what this research project is doing and finding
+
+{{PROGRAM_LAYMAN}}
+<!-- THE LAYMAN ENTRY POINT (judged by layman-judge — see LAYMAN BAR above). For a reader with
+     zero background: what question this program is trying to answer and why anyone cares; a
+     numbered walk of how an answer gets made here (data collected -> method applied -> runs ->
+     checks designed to kill false positives -> a claim that survives or is retracted),
+     mirroring the program data-flow below in everyday words; then "The numbers you will meet
+     in this document:" — every recurring headline number explained in words, including whether
+     its pass/fail rule was promised in advance. Where the program's story is a retraction,
+     tell it straight — what looked true, what test caught it, what lesson was kept. -->
 
 ## The program at a glance
 
@@ -77,14 +106,16 @@ template_rev: "1.0"
 
 ### Program data-flow (how a claim gets made)
 
-```
-{{PROGRAM_DATAFLOW_ASCII}}
+```flow
+{{PROGRAM_DATAFLOW_DSL}}
 ```
 
 {{PROGRAM_DATAFLOW_LEGEND}}
-<!-- ONE diagram: data sources → preprocessing → method/model → runs (seeds × configs) →
-     metrics.json → /analyze stats → verifier + confound-audit gates → claim/verdict →
-     /brief + /paper. Label arrows with WHAT moves. Numbered one-line legend below. -->
+<!-- ONE ```flow DSL block (grammar: templates/diagram-dsl.md): data sources → preprocessing →
+     method/model → runs (seeds × configs) → metrics.json → /analyze stats → verifier +
+     confound-audit gates → claim/verdict → /brief + /paper. <= ~15 nodes; EVERY edge labeled
+     with WHAT moves; classes semantic (.src/.engine/.artifact/.surface/.user). Numbered
+     one-line legend below. -->
 
 ### Compute & runtime surfaces
 
@@ -106,9 +137,11 @@ template_rev: "1.0"
 
 ### Dependency & retraction-cascade graph
 
+```graph
+{{DEPENDENCY_GRAPH_DSL}}
 ```
-{{DEPENDENCY_GRAPH_ASCII}}
-```
+<!-- ```graph DSL block: one node per ledger experiment (label "EXP-id\n(lifecycle)"), edges
+     from `parent:` + `_Depends:_` evidence, each labeled with what the dependent cites. -->
 
 **How this graph is built:** nodes are the ledger's experiment entries; tree edges come from each
 node's `parent:` in `atlas.yaml`; evidence edges come from `_Depends:_` annotations in each
@@ -147,6 +180,19 @@ this). The graph is DECLARED structure; {{DEP_GRAPH_DISCREPANCIES}}.
 <!-- The FULL falsifiable H-NNN card(s) from hypothesis.md (statement, prediction, kill
      condition), the motivation in plain scientific language, and what the answer changes.
      For a dead-end: lead with the why-it-died lesson. -->
+
+#### In plain words — what we did and what we found
+
+{{LAYMAN_WALK}}
+<!-- THE LAYMAN TWIN of the mechanics below (judged by layman-judge — see LAYMAN BAR). Mirror
+     the pipeline walk STEP FOR STEP with the SAME numbering, in everyday words: what went in,
+     what was done to it, what came out. Then "What the numbers mean:" — every reported number
+     in this experiment retold in words (what it measures, how it was computed, what it was
+     compared against, and whether that bar was promised in advance or chosen after). Then
+     "How it could have fooled us — and what we did about it:" the checks/gates story in plain
+     words (for a retraction: what looked true, which probe caught it, the lesson kept). No
+     unexplained term at first use; no file paths; no pointing at the expert sections.
+     Coverage and length comparable to the mechanics — a translation, not a teaser. -->
 
 #### How it works — mechanics
 

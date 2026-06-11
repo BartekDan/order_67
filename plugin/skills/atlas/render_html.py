@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic ATLAS.md → ATLAS.html editorial renderer (order-67 atlas v2, zero dependencies).
+"""Deterministic ATLAS.md → ATLAS.html editorial renderer (order-67 atlas v3, zero dependencies).
 
 Ported verbatim from order-66 skills/atlas/render_html.py (the two harnesses share the house
 editorial); only this docstring and the footer line differ. Keep the two in sync on bugfixes.
@@ -16,14 +16,25 @@ NOTE: the ATLAS.md h1 must be PLAIN TEXT (no raw HTML) — inline() escapes raw 
 renderer itself italicizes the "(deep dossier)" suffix.
 
 Parses exactly the markdown subset the atlas-deep template emits: YAML frontmatter, #/##/###/####
-headings, fenced code blocks, pipe tables, bullet lists (one nesting level), blockquotes, hrs,
-raw <a id=…> anchor lines, and inline **bold** / *italic* / `code` / [links](…).
+headings, fenced code blocks, pipe tables, bullet + ordered lists (one nesting level),
+blockquotes, hrs, raw <a id=…> anchor lines, and inline **bold** / *italic* / `code` /
+[links](…).
+
+v3 additions:
+- ```flow / ```graph fenced blocks hold the diagram DSL (templates/diagram-dsl.md) and are
+  rendered as deterministic layered SVG diagrams (boxes, labeled arrows, area groups) instead
+  of ASCII art. Plain ``` blocks still render as monospace <pre> (legacy/back-compat). A DSL
+  block that fails to parse falls back to <pre> with the error noted — never a crash.
+- Headings starting with "In plain words" open a visually distinct layman panel that wraps
+  the whole section (until the next heading of the same or higher level).
 """
 from __future__ import annotations
 
 import html
+import itertools
 import re
 import sys
+import textwrap
 from pathlib import Path
 
 # ----------------------------------------------------------------------------- inline markdown
@@ -56,6 +67,329 @@ def slug(text: str) -> str:
     return re.sub(r"[\s_]+", "-", s).strip("-") or "s"
 
 
+# ----------------------------------------------------------------------------- diagram DSL
+# Grammar (one statement per line; see templates/diagram-dsl.md):
+#   group <id> "Title"
+#   node  <id> "Label"  [@<group>] [.<class>]      class ∈ src|engine|artifact|surface|user
+#   edge  <a> -> <b> ["what moves"] [dashed]
+# Layout is layered top-down: layer = longest path from the roots; within a layer nodes keep
+# (group, declaration) order — authors control left-to-right by declaration order. Fully
+# deterministic: no randomness, no timestamps.
+
+_DSL_GROUP = re.compile(r'^group\s+(\S+)\s+"([^"]*)"\s*$')
+_DSL_NODE = re.compile(r'^node\s+(\S+)\s+"([^"]*)"((?:\s+[@.]\S+)*)\s*$')
+_DSL_EDGE = re.compile(r'^edge\s+(\S+)\s*->\s*(\S+)(?:\s+"([^"]*)")?(\s+dashed)?\s*$')
+
+_CLASS_COLOR = {"src": "#d4a017", "engine": "#1e5f6e", "artifact": "#4a5d23",
+                "surface": "#c4451c", "user": "#0a0a0a", "": "rgba(10,10,10,.55)"}
+_GROUP_TINTS = ["rgba(30,95,110,.06)", "rgba(212,160,23,.08)", "rgba(74,93,35,.07)",
+                "rgba(196,69,28,.05)", "rgba(10,10,10,.04)"]
+
+_NODE_FS, _CHAR_W, _LINE_H, _PAD_X, _PAD_Y = 12.5, 7.6, 17.0, 13.0, 10.0
+_H_GAP, _V_GAP, _WRAP_COLS = 34.0, 64.0, 26
+_svg_seq = itertools.count()
+
+
+class _DslError(Exception):
+    pass
+
+
+def _parse_dsl(text: str):
+    nodes: dict[str, dict] = {}
+    groups: dict[str, dict] = {}
+    edges: list[dict] = []
+
+    def ensure(nid: str) -> dict:
+        if nid not in nodes:
+            nodes[nid] = {"id": nid, "label": nid, "group": None, "cls": "", "order": len(nodes)}
+        return nodes[nid]
+
+    for raw in text.splitlines():
+        ln = raw.strip()
+        if not ln or ln.startswith("#"):
+            continue
+        if m := _DSL_GROUP.match(ln):
+            groups[m.group(1)] = {"id": m.group(1), "title": m.group(2), "order": len(groups)}
+        elif m := _DSL_NODE.match(ln):
+            n = ensure(m.group(1))
+            n["label"] = m.group(2)
+            for tok in (m.group(3) or "").split():
+                if tok.startswith("@"):
+                    n["group"] = tok[1:]
+                elif tok.startswith("."):
+                    n["cls"] = tok[1:]
+            if n["cls"] and n["cls"] not in _CLASS_COLOR:
+                raise _DslError(f"unknown class .{n['cls']} (known: {', '.join(k for k in _CLASS_COLOR if k)})")
+        elif m := _DSL_EDGE.match(ln):
+            ensure(m.group(1)); ensure(m.group(2))
+            edges.append({"src": m.group(1), "dst": m.group(2),
+                          "label": m.group(3) or "", "dashed": bool(m.group(4))})
+        else:
+            raise _DslError(f"unparseable line: {ln!r}")
+    if not nodes:
+        raise _DslError("diagram has no nodes")
+    for n in nodes.values():
+        if n["group"] and n["group"] not in groups:
+            raise _DslError(f"node {n['id']} names undeclared group @{n['group']}")
+    return nodes, groups, edges
+
+
+def _layer(nodes: dict, edges: list[dict]) -> None:
+    preds: dict[str, list[str]] = {nid: [] for nid in nodes}
+    for e in edges:
+        if e["src"] != e["dst"]:
+            preds[e["dst"]].append(e["src"])
+    state: dict[str, int] = {}  # 1 = visiting, 2 = done
+
+    def depth(nid: str) -> int:
+        if state.get(nid) == 1:        # cycle: cut the back edge for layering
+            return 0
+        if state.get(nid) == 2:
+            return nodes[nid]["layer"]
+        state[nid] = 1
+        d = max((depth(p) + 1 for p in preds[nid]), default=0)
+        nodes[nid]["layer"] = d
+        state[nid] = 2
+        return d
+
+    for nid in nodes:
+        depth(nid)
+
+
+def _size(n: dict) -> None:
+    lines: list[str] = []
+    for part in n["label"].split("\\n"):
+        lines.extend(textwrap.wrap(part, _WRAP_COLS) or [""])
+    n["lines"] = lines
+    n["w"] = max(70.0, max(len(l) for l in lines) * _CHAR_W + 2 * _PAD_X)
+    n["h"] = len(lines) * _LINE_H + 2 * _PAD_Y
+
+
+def _place(nodes: dict, groups: dict, edges: list[dict]) -> tuple[float, float]:
+    by_layer: dict[int, list[dict]] = {}
+    for n in nodes.values():
+        by_layer.setdefault(n["layer"], []).append(n)
+    gorder = lambda n: (groups[n["group"]]["order"] if n["group"] else -1, n["order"])
+    for lst in by_layer.values():
+        lst.sort(key=gorder)
+
+    # y per layer
+    y = 8.0
+    for li in sorted(by_layer):
+        row_h = max(n["h"] for n in by_layer[li])
+        for n in by_layer[li]:
+            n["y"] = y + (row_h - n["h"]) / 2
+        y += row_h + _V_GAP
+    total_h = y - _V_GAP + 8.0
+
+    # initial x: sequential per layer, centered on the widest layer
+    widths = {li: sum(n["w"] for n in lst) + _H_GAP * (len(lst) - 1)
+              for li, lst in by_layer.items()}
+    cx = max(widths.values()) / 2 + 8.0
+    for li, lst in by_layer.items():
+        x = cx - widths[li] / 2
+        for n in lst:
+            n["x"] = x
+            x += n["w"] + _H_GAP
+
+    # alignment sweeps: pull nodes toward the mean of their neighbors, keep order, no overlap
+    nbrs_dn = {nid: [e["src"] for e in edges if e["dst"] == nid] for nid in nodes}
+    nbrs_up = {nid: [e["dst"] for e in edges if e["src"] == nid] for nid in nodes}
+    layers_sorted = sorted(by_layer)
+    for nbrs, order in ((nbrs_dn, layers_sorted), (nbrs_up, layers_sorted[::-1])) * 2:
+        for li in order:
+            lst = by_layer[li]
+            for n in lst:
+                pts = [nodes[m]["x"] + nodes[m]["w"] / 2 for m in nbrs[n["id"]]]
+                if pts:
+                    n["x"] = sum(pts) / len(pts) - n["w"] / 2
+            left = 8.0
+            for n in lst:                       # resolve overlaps left → right
+                n["x"] = max(n["x"], left)
+                left = n["x"] + n["w"] + _H_GAP
+            right = max(n["x"] + n["w"] for n in lst) if lst else 0
+            for n in reversed(lst):             # and once right → left to recentre
+                n["x"] = min(n["x"], right - n["w"])
+                right = n["x"] - _H_GAP
+
+    total_w = max(n["x"] + n["w"] for n in nodes.values()) + 8.0
+    return total_w, total_h
+
+
+def _bezier_at(p0, p1, p2, p3, t: float) -> tuple[float, float]:
+    u = 1 - t
+    return (u**3 * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t**3 * p3[0],
+            u**3 * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t**3 * p3[1])
+
+
+_GROUP_SOLID = ["#1e5f6e", "#9a7510", "#4a5d23", "#8b2f10", "#555555"]
+
+
+def _render_svg(text: str) -> str:
+    nodes, groups, edges = _parse_dsl(text)
+    _layer(nodes, edges)
+    for n in nodes.values():
+        _size(n)
+    _place(nodes, groups, edges)
+
+    # spread multi-edge attachment points across node tops/bottoms
+    outs: dict[str, list[dict]] = {}
+    ins: dict[str, list[dict]] = {}
+    for e in edges:
+        outs.setdefault(e["src"], []).append(e)
+        ins.setdefault(e["dst"], []).append(e)
+    other_x = lambda e, end: nodes[e[end]]["x"] + nodes[e[end]]["w"] / 2
+    for nid, lst in outs.items():
+        lst.sort(key=lambda e: other_x(e, "dst"))
+        for k, e in enumerate(lst):
+            e["sx"] = nodes[nid]["x"] + nodes[nid]["w"] * (k + 1) / (len(lst) + 1)
+    for nid, lst in ins.items():
+        lst.sort(key=lambda e: other_x(e, "src"))
+        for k, e in enumerate(lst):
+            e["tx"] = nodes[nid]["x"] + nodes[nid]["w"] * (k + 1) / (len(lst) + 1)
+
+    # bounds tracker — viewBox is computed from everything actually drawn
+    bx = [1e9, 1e9, -1e9, -1e9]
+
+    def grow(x0: float, y0: float, x1: float, y1: float) -> None:
+        bx[0] = min(bx[0], x0); bx[1] = min(bx[1], y0)
+        bx[2] = max(bx[2], x1); bx[3] = max(bx[3], y1)
+
+    cx_all = sum(n["x"] + n["w"] / 2 for n in nodes.values()) / len(nodes)
+
+    # group rendering decision: PANELS only when EVERY group's bbox is free of foreign nodes;
+    # if any group is cross-cutting, ALL groups render as per-node corner CHIPS instead — a
+    # mixed presentation reads worse than either pure form.
+    panels, chips = [], {}
+    candidates = []
+    any_foreign = False
+    for g in sorted(groups.values(), key=lambda g: g["order"]):
+        mem = [n for n in nodes.values() if n["group"] == g["id"]]
+        if not mem:
+            continue
+        x0 = min(n["x"] for n in mem) - 12
+        y0 = min(n["y"] for n in mem) - 27
+        x1 = max(n["x"] + n["w"] for n in mem) + 12
+        x1 = max(x1, x0 + len(g["title"]) * 6.1 + 26)        # title must fit
+        y1 = max(n["y"] + n["h"] for n in mem) + 12
+        foreign = any(n["group"] != g["id"]
+                      and n["x"] < x1 - 4 and n["x"] + n["w"] > x0 + 4
+                      and n["y"] < y1 - 4 and n["y"] + n["h"] > y0 + 4
+                      for n in nodes.values())
+        any_foreign = any_foreign or foreign
+        candidates.append((g, mem, x0, y0, x1, y1))
+    for g, mem, x0, y0, x1, y1 in candidates:
+        if any_foreign:
+            for n in mem:
+                chips[n["id"]] = g
+        else:
+            panels.append((g, x0, y0, x1, y1))
+
+    aid = f"arr{next(_svg_seq)}"
+    parts: list[str] = [
+        f'<defs><marker id="{aid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" '
+        'markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" '
+        'fill="#2a2a2a"/></marker></defs>']
+
+    for g, x0, y0, x1, y1 in panels:
+        tint = _GROUP_TINTS[g["order"] % len(_GROUP_TINTS)]
+        parts.append(f'<rect x="{x0:.1f}" y="{y0:.1f}" width="{x1-x0:.1f}" height="{y1-y0:.1f}" '
+                     f'rx="10" fill="{tint}" stroke="rgba(10,10,10,.22)" stroke-dasharray="3 3"/>')
+        parts.append(f'<text x="{x0+10:.1f}" y="{y0+15:.1f}" font-family="JetBrains Mono,monospace" '
+                     f'font-size="9.5" letter-spacing="1.4" fill="#6b6b6b">'
+                     f'{html.escape(g["title"].upper())}</text>')
+        grow(x0, y0, x1, y1)
+
+    # edges under nodes; labels collected for a collision pass
+    lbl: list[dict] = []
+    for idx, e in enumerate(edges):
+        s, t = nodes[e["src"]], nodes[e["dst"]]
+        dash = ' stroke-dasharray="5 4"' if e["dashed"] else ""
+        span = t["layer"] - s["layer"]
+        if span >= 1:
+            p0 = (e.get("sx", s["x"] + s["w"] / 2), s["y"] + s["h"])
+            p3 = (e.get("tx", t["x"] + t["w"] / 2), t["y"])
+            dy = (p3[1] - p0[1]) * 0.42
+            bow = 0.0
+            if span >= 2:                       # bow long edges sideways, away from the middle
+                side = 1.0 if (p0[0] + p3[0]) / 2 >= cx_all else -1.0
+                bow = side * (44.0 + 18.0 * (span - 2) + 12.0 * (idx % 2))
+            p1, p2 = (p0[0] + bow, p0[1] + dy), (p3[0] + bow, p3[1] - dy)
+            lt = 0.30 if span == 1 else 0.5     # label near source, or mid-bow for long edges
+        else:                                   # flat or upward edge: bulge out on the right
+            p0 = (s["x"] + s["w"], s["y"] + s["h"] / 2)
+            p3 = (t["x"] + t["w"], t["y"] + t["h"] / 2)
+            bulge = max(p0[0], p3[0]) + 52 + 16 * (idx % 3)
+            p1, p2 = (bulge, p0[1]), (bulge, p3[1])
+            lt = 0.5
+        parts.append(f'<path d="M{p0[0]:.1f},{p0[1]:.1f} C{p1[0]:.1f},{p1[1]:.1f} '
+                     f'{p2[0]:.1f},{p2[1]:.1f} {p3[0]:.1f},{p3[1]:.1f}" fill="none" '
+                     f'stroke="#2a2a2a" stroke-width="1.2"{dash} marker-end="url(#{aid})"/>')
+        for q in (p0, p1, p2, p3):
+            grow(q[0], q[1], q[0], q[1])
+        if e["label"]:
+            mx, my = _bezier_at(p0, p1, p2, p3, lt)
+            lbl.append({"x": mx, "y": my + 4.0, "text": e["label"]})
+
+    # deterministic label de-collision: a label must clear both earlier labels AND node boxes
+    # (pushed down 13px at a time until free — downwards lands in the inter-layer gap)
+    rects = [(n["x"] - 4, n["y"] - 4, n["x"] + n["w"] + 4, n["y"] + n["h"] + 4)
+             for n in nodes.values()]
+    placed: list[dict] = []
+    for L in lbl:
+        hw = len(L["text"]) * 3.1 + 6
+        for _ in range(10):
+            hit_lbl = any(abs(L["x"] - p["x"]) < hw + p["hw"] and abs(L["y"] - p["y"]) < 13
+                          for p in placed)
+            hit_node = any(L["x"] + hw > rx0 and L["x"] - hw < rx1
+                           and L["y"] > ry0 and L["y"] - 11 < ry1
+                           for rx0, ry0, rx1, ry1 in rects)
+            if not hit_lbl and not hit_node:
+                break
+            L["y"] += 13.0
+        L["hw"] = hw
+        placed.append(L)
+
+    # nodes (+ group chips for cross-cutting groups)
+    for n in sorted(nodes.values(), key=lambda n: n["order"]):
+        color = _CLASS_COLOR[n["cls"]]
+        dark = n["cls"] == "user"
+        fill, tcol = ("#0a0a0a", "#f5f1e8") if dark else ("#faf6ed", "#1a1a1a")
+        parts.append(f'<rect x="{n["x"]:.1f}" y="{n["y"]:.1f}" width="{n["w"]:.1f}" '
+                     f'height="{n["h"]:.1f}" rx="7" fill="{fill}" stroke="{color}" '
+                     f'stroke-width="{1.6 if n["cls"] else 1.2}"/>')
+        if n["cls"] and not dark:
+            parts.append(f'<rect x="{n["x"]:.1f}" y="{n["y"]:.1f}" width="{n["w"]:.1f}" '
+                         f'height="3.5" rx="1.75" fill="{color}"/>')
+        ty0 = n["y"] + _PAD_Y + _LINE_H * 0.72
+        for j, line in enumerate(n["lines"]):
+            parts.append(f'<text x="{n["x"] + n["w"]/2:.1f}" y="{ty0 + j*_LINE_H:.1f}" '
+                         f'text-anchor="middle" font-family="JetBrains Mono,monospace" '
+                         f'font-size="{_NODE_FS}" fill="{tcol}">{html.escape(line)}</text>')
+        grow(n["x"], n["y"], n["x"] + n["w"], n["y"] + n["h"])
+        if n["id"] in chips:
+            g = chips[n["id"]]
+            parts.append(f'<text x="{n["x"]:.1f}" y="{n["y"]-5:.1f}" '
+                         f'font-family="JetBrains Mono,monospace" font-size="8.5" '
+                         f'letter-spacing="1.1" fill="{_GROUP_SOLID[g["order"] % len(_GROUP_SOLID)]}" '
+                         f'paint-order="stroke" stroke="#faf6ed" stroke-width="3">'
+                         f'{html.escape(g["title"].upper())}</text>')
+            grow(n["x"], n["y"] - 16, n["x"] + len(g["title"]) * 5.6, n["y"])
+
+    for L in placed:                            # edge labels on top of everything
+        parts.append(f'<text x="{L["x"]:.1f}" y="{L["y"]:.1f}" text-anchor="middle" '
+                     f'font-family="JetBrains Mono,monospace" font-size="10.5" fill="#444" '
+                     f'paint-order="stroke" stroke="#faf6ed" stroke-width="4">'
+                     f'{html.escape(L["text"])}</text>')
+        grow(L["x"] - L["hw"], L["y"] - 11, L["x"] + L["hw"], L["y"] + 3)
+
+    vx, vy = bx[0] - 10, bx[1] - 10
+    vw, vh = bx[2] - bx[0] + 20, bx[3] - bx[1] + 20
+    return (f'<figure class="dsl"><svg viewBox="{vx:.0f} {vy:.0f} {vw:.0f} {vh:.0f}" '
+            f'style="max-width:{vw:.0f}px" role="img" '
+            f'xmlns="http://www.w3.org/2000/svg">{"".join(parts)}</svg></figure>')
+
+
 # ----------------------------------------------------------------------------- block parsing
 def parse(md: str) -> tuple[dict, list[dict], str]:
     """Return (frontmatter, nav entries, body html)."""
@@ -75,6 +409,7 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
     nav: list[dict] = []
     seen_ids: set[str] = set()
     pending_anchor: str | None = None
+    layman_lvl: int | None = None
     para: list[str] = []
     quote: list[str] = []
     n = len(lines)
@@ -107,11 +442,20 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
 
         if s.startswith("```"):
             flush_para(); flush_quote()
+            info = s[3:].strip().lower()
             i += 1
             buf = []
             while i < n and not lines[i].strip().startswith("```"):
                 buf.append(lines[i]); i += 1
-            out.append('<pre class="diagram">' + html.escape("\n".join(buf)) + "</pre>")
+            raw = "\n".join(buf)
+            if info in ("flow", "graph", "diagram"):
+                try:
+                    out.append(_render_svg(raw))
+                except _DslError as err:  # honest fallback, never a crash
+                    out.append(f"<!-- diagram DSL error: {html.escape(str(err))} -->")
+                    out.append('<pre class="diagram">' + html.escape(raw) + "</pre>")
+            else:
+                out.append('<pre class="diagram">' + html.escape(raw) + "</pre>")
             i += 1
             continue
 
@@ -125,11 +469,17 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
         if m:
             flush_para(); flush_quote()
             lvl, text = len(m.group(1)), m.group(2)
+            if layman_lvl and lvl <= layman_lvl:
+                out.append("</section>")
+                layman_lvl = None
             hid = pending_anchor or uniq(slug(text))
             pending_anchor = None
             if lvl == 1:
                 out.append(f'<h1 id="{hid}">{inline(text)}</h1>')
             else:
+                if text.lower().startswith("in plain words"):
+                    out.append('<section class="layman">')
+                    layman_lvl = lvl
                 if lvl == 2:
                     nav.append({"lvl": 2, "text": re.sub(r"[`]", "", text), "id": hid})
                 elif lvl == 3 and text.startswith("`"):
@@ -169,6 +519,21 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
             i += 1
             continue
 
+        if re.match(r"^\s*\d{1,3}[.)] ", ln):
+            flush_para(); flush_quote()
+            out.append("<ol>")
+            while i < n and re.match(r"^\s*\d{1,3}[.)] ", lines[i]):
+                item = re.sub(r"^\s*\d{1,3}[.)] ", "", lines[i]).strip()
+                i += 1
+                while i < n and lines[i].strip() and not re.match(r"^\s*\d{1,3}[.)] ", lines[i]) \
+                        and not re.match(r"^\s*[-*] ", lines[i]) \
+                        and not re.match(r"^(#{1,4}) |^```|^\||^>", lines[i].strip()):
+                    item += " " + lines[i].strip()
+                    i += 1
+                out.append(f"<li>{inline(item)}</li>")
+            out.append("</ol>")
+            continue
+
         if re.match(r"^\s*[-*] ", ln):
             flush_para(); flush_quote()
             out.append("<ul>")
@@ -202,6 +567,8 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
         i += 1
 
     flush_para(); flush_quote()
+    if layman_lvl:
+        out.append("</section>")
     return meta, nav, "\n".join(out)
 
 
@@ -260,6 +627,21 @@ pre.diagram{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.
 font-variant-ligatures:none;background:var(--cream);border:1px solid var(--soft-line);
 border-left:3px solid var(--olive);border-radius:4px;padding:16px 18px;margin:0 0 18px;
 overflow-x:auto;white-space:pre}
+figure.dsl{margin:0 0 22px;background:var(--cream);border:1px solid var(--soft-line);
+border-left:3px solid var(--olive);border-radius:4px;padding:18px 16px;overflow-x:auto}
+figure.dsl svg{display:block;margin:0 auto;width:100%;height:auto}
+section.layman{background:linear-gradient(135deg,rgba(212,160,23,.07),rgba(30,95,110,.05));
+border:1px solid var(--soft-line);border-left:4px solid var(--ochre);border-radius:6px;
+padding:6px 26px 14px;margin:30px 0 34px;position:relative}
+section.layman::before{content:'PLAIN WORDS — NO JARGON';position:absolute;top:-9px;left:18px;
+background:var(--paper);padding:0 8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;
+letter-spacing:.16em;color:var(--ochre);font-weight:600}
+section.layman h2,section.layman h3,section.layman h4{margin-top:22px}
+section.layman h4{color:#9a7510}
+section.layman p{font-size:16px;line-height:1.72}
+section.layman ol li,section.layman ul li{font-size:15.5px;line-height:1.66;margin-bottom:9px}
+ol{margin:0 0 14px 24px;max-width:860px}
+ol li{margin-bottom:7px}
 table{border-collapse:collapse;width:100%;margin:0 0 20px;font-size:13.5px;background:var(--cream)}
 th{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;
 text-transform:uppercase;color:var(--paper);background:var(--teal);text-align:left;
