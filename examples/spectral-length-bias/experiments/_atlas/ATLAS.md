@@ -1,11 +1,11 @@
 ---
 generated: atlas
 artifact: atlas-deep
-generated_at: 2026-06-10T17:24:29Z
+generated_at: 2026-06-11T18:47:06Z
 project: spectral-length-bias (order-67 acceptance fixture)
-git_anchor: 3369f61 2026-06-10
-regen_mode: full
-template_rev: "1.0"
+git_anchor: 11b0ed2 2026-06-11
+regen_mode: full (v3 retrofit: layman track + DSL diagrams)
+template_rev: "2.0"
 ---
 
 # spectral-length-bias — ATLAS (deep dossier)
@@ -17,9 +17,91 @@ template_rev: "1.0"
 > board is [STATUS.md](STATUS.md) (rendered from `atlas.yaml`). Generated 2026-06-10T17:24:29Z at commit
 > 3369f61 2026-06-10. Do not hand-edit — re-run `/atlas`.
 
+## In plain words — what this research project is doing and finding
+
+First, an honest framing: this is not a live research project. It is a **worked teaching
+example** — a complete, deliberately staged re-enactment of a real research episode, built so
+that the research harness (the set of rules and checks this team uses to keep its science
+honest) could be tested end to end. Every file in it is marked as a fixture (a staged example),
+and its numbers, while internally consistent, were written to tell the story — no computer run
+behind them can be re-executed from this project. What makes it worth reading is the story it
+stages: **a result that looked excellent and was correctly thrown out**, caught by checks that
+were promised before anyone saw the data.
+
+The question the staged experiment asks: when an AI gives a wrong answer with a straight face —
+the field calls this a *hallucination* (the AI confidently making something up) — does its
+internal activity wiggle in a recognizably different way than when it answers truthfully? If
+yes, you could build a warning light for AI answers. Here is how an answer to such a question
+gets made in this project, start to finish:
+
+1. **Promise the rules first.** Before touching any data, the team writes down — and seals with
+   a tamper-evident fingerprint (a *hash*: a short code computed from the text, which changes if
+   even one letter of the text changes) — exactly what will be measured, what score counts as
+   success, and what would count as failure. This sealed promise is called the
+   *pre-registration*. It exists so nobody can quietly move the goalposts after seeing the
+   results.
+2. **Collect the data.** Thousands of question-and-answer exchanges with AI models, each answer
+   labelled truthful or hallucinated, and for each answer a recording of the AI's internal
+   activity — think of a strip-chart of measurements taken inside the machine while it wrote
+   each word. The data is split into a learning half and a final-exam half, with a strict rule:
+   **no question may appear on both sides**, so the exam can never be passed by memory.
+3. **Apply the method.** A mathematical trick turns each activity recording into a handful of
+   summary numbers (details in plain words inside the experiment section below), and a simple
+   statistical learner is taught, on the learning half only, to tell the two kinds of answers
+   apart from those numbers.
+4. **Run and score.** The whole thing runs on a rented fast-calculation computer, several times
+   over with different random starting points to make sure the result is not a fluke of one
+   run, and is then scored **exactly once** on the final-exam half. Every run leaves behind a
+   sealed evidence folder — the exact settings used, the random starting points, the data
+   fingerprint — so the result's origin can always be reconstructed.
+5. **Try to kill the result.** This is the step the whole example exists to teach. A
+   promising score is not believed until it survives a battery of checks designed to destroy
+   it: one check shuffles the answer labels at random to see what score pure luck produces;
+   the others hunt for a *confound* — a sneaky stand-in variable, some boring property of the
+   data that the learner might be reading instead of the interesting thing. Crucially, the
+   pass/fail bars for these checks were written down and time-stamped BEFORE any check was run.
+6. **An independent referee decides.** A separate reviewer — deliberately not the people who
+   ran the experiment — reads the evidence and issues a verdict. Here the verdict was:
+   **reject the claim and retract it**. The detector worked, but it was detecting the wrong
+   thing. The dead end stays on the map, with its lesson written next to it, because in this
+   way of working a documented failure is a finding, not an embarrassment.
+
+**The numbers you will meet in this document:**
+
+- **0.71** — the headline score the detector achieved on the final exam. The score used here
+  (called *balanced accuracy*) is designed so that **0.50 means coin-toss guessing** and 1.00
+  means perfect, and so that it stays fair even when one kind of answer is rarer than the
+  other. 0.71 means: clearly better than guessing.
+- **0.65** — the success bar promised in advance. The 0.71 cleared it — which is exactly why
+  this example matters: clearing the promised bar was still not enough, because of what came
+  next.
+- **[0.66, 0.76]** — the plausible range around the 0.71 (a *confidence interval*): if the
+  exam were re-dealt many times with different question samples, the score would be expected
+  to land in this band. It sits comfortably above 0.50, so the score is not a small-sample
+  fluke.
+- **+6.2** — how far the real score sits above what label-shuffling produces, measured in
+  "luck units" (one luck unit = the typical wobble among the 1,000 shuffled-label scores; the
+  shuffles centre on 0.50 and wobble by about 0.034). Sitting 6.2 wobbles above luck is a very
+  long way, so the detector genuinely predicts *something*. The
+  trap: this check can never tell you *what* it predicts.
+- **142 versus 38** — the median length, in word-pieces, of hallucinated versus truthful
+  answers in this data. Made-up answers ramble. This boring fact is the villain of the story.
+- **0.79** — the strength of association (on a 0-to-1 scale where 1 is lock-step) between the
+  detector's favourite summary number and sheer answer length. The "hallucination detector"
+  was, to a large degree, a *length* detector.
+- **0.53** — the score after the influence of answer length is mathematically removed:
+  statistically indistinguishable from the 0.50 coin toss. This single number killed the claim.
+- **1 of 4** — of the four kill-it checks, only the luck check passed (the detector predicts
+  *something*); all three confound checks failed (what it predicts is length). The rule
+  promised in advance said: all four must pass or the claim dies. It died.
+- **1,647 / 412** — how many distinct questions sat in the learning half and the final-exam
+  half, with zero questions straddling both sides (checked mechanically).
+- **12 hours / 36 dollars** — the hard spending cap promised for the rented computer; about
+  9.5 hours were actually used before the program stopped, within budget.
+
 ## The program at a glance
 
-This project is not a live research program — it is the order-67 research harness's **worked acceptance fixture** (`fixture: true` on every artifact; `experiments/_atlas/atlas.yaml:2`, `results/EXP-spectral-length-bias/stats.json:3`), a synthetic end-to-end re-enactment of the proteus "Eksperyment 1" spectral length-bias self-retraction (`README.md:1-6`). The scientific question it stages: does a Daubechies-4 wavelet-band energy feature of H-Neuron activation trajectories detect hallucinated vs faithful answers (H-001, `experiments/EXP-spectral-length-bias/hypothesis.md:8-13`)? The single experiment produced a confirmatory-tier positive that looks real — held-out balanced_accuracy 0.71, CI [0.66, 0.76], permutation z = +6.2 (`runs/RUN-001/metrics.json:6-8,17`) — and was then correctly **retracted**: the signal is an answer-length confound, killed by the four-probe `/confound-audit` (`Survives: NO`, `audit.md:86`) and graded REJECT by the independent results-verifier (`verdict.md:11`), moving `experiment.json:status` to `retracted` (`experiment.json:4`). The data-hygiene gate PASSES throughout (`data-audit.md:20`) — the deliberate point is the contrast between a clean split and an invalid claim. The program stands complete and frozen as the worked example; the "next" step in the ledger is hypothetical only (`atlas.yaml:8`).
+This project is not a live research program — it is the order-67 research harness's **worked acceptance fixture** (`fixture: true` on every artifact; `experiments/_atlas/atlas.yaml:2`, `results/EXP-spectral-length-bias/stats.json:3`), a synthetic end-to-end re-enactment of the proteus "Eksperyment 1" spectral length-bias self-retraction (`README.md:1-6`). The scientific question it stages: does a Daubechies-4 wavelet-band energy feature (an equalizer-style summary of a wiggly signal, explained in plain words below) of H-Neuron activation trajectories (H-Neurons are the measurement points inside the AI whose activity was recorded while it wrote each word) detect hallucinated vs faithful answers (H-001, `experiments/EXP-spectral-length-bias/hypothesis.md:8-13`)? The single experiment produced a confirmatory-tier positive that looks real — held-out balanced_accuracy 0.71, CI [0.66, 0.76], permutation z = +6.2 (`runs/RUN-001/metrics.json:6-8,17`) — and was then correctly **retracted**: the signal is an answer-length confound, killed by the four-probe `/confound-audit` (`Survives: NO`, `audit.md:86`) and graded REJECT by the independent results-verifier (`verdict.md:11`), moving `experiment.json:status` to `retracted` (`experiment.json:4`). The data-hygiene gate PASSES throughout (`data-audit.md:20`) — the deliberate point is the contrast between a clean split and an invalid claim. The program stands complete and frozen as the worked example; the "next" step in the ledger is hypothetical only (`atlas.yaml:8`).
 
 ### The exploration tree (every path, including the dead ones)
 
@@ -32,31 +114,25 @@ Glyphs: ✅ done · ▶ active · ⛔ blocked · ✗ dead-end · ⊘ superseded 
 
 ### Program data-flow (how a claim gets made)
 
-```
-[1] proteus-hneurons-qa @ sha256:7c1d3e9a...      [2] /register freeze: prereg.lock
-    qid-disjoint files (1647 train / 412 held-out      sha256 99469b25... (RULE-5)
-    qids, straddle 0)                                       |
-        |  H-Neuron trajectories x[1..T] per answer         |
-        v                                                   v
-[3] spectral featurization (remote A100; run code OFF-repo, host-config gitignored)
-    resample T->32 -> db4 DWT (3 levels) -> 4 band energies -> per-model z-score
-        |  features + HALLUCINATED/FAITHFUL labels
-        v
-[4] L2 logistic, qid-grouped CV (reducers fit train-fold only, RULE-10)
-    -> qid-disjoint held-out fold scored EXACTLY ONCE
-        |  scalars fetched
-        v
-[5] runs/RUN-001/ bundle: metrics.json (bal-acc 0.71) + seed.txt + config.resolved.json
-    + env.lock + git.commit + dataset.hash
-        |  /analyze
-        v
-[6] results/stats.json (claim C-001) + figures (fig1_balacc_vs_chance.svg, C-001_perm_null.png)
-        |
-        +--> [7] /data-audit ................ Verdict: PASS  (leakage clean)
-        +--> [8] /confound-audit (4 probes, thresholds frozen FIRST) ... Survives: NO
-        |
-        v
-[9] results-verifier ## Verdict: REJECT -> experiment.json status: retracted (C-001 dead)
+```flow
+node data "proteus-hneurons-qa\n@ sha256:7c1d3e9a… (qid-disjoint\n1647 train / 412 held-out qids)" .artifact
+node prereg "/register freeze\nprereg.lock sha256 99469b25…" .engine
+node feat "remote A100 run (code off-repo)\nresample 32 → db4 DWT (3 lvl)\n→ 4 band energies → per-model z-score" .engine
+node clf "L2 logistic, qid-grouped CV\nheld-out fold scored EXACTLY ONCE" .engine
+node bundle "runs/RUN-001/ bundle\nmetrics + seed + config + env + hash" .artifact
+node stats "/analyze → stats.json (C-001)\n+ figures" .artifact
+node daudit "/data-audit\nVerdict: PASS (leakage clean)" .engine
+node caudit "/confound-audit, 4 probes\nthresholds frozen FIRST → Survives: NO" .engine
+node verdict "results-verifier: REJECT\nexperiment.json status: retracted" .surface
+edge data -> feat "trajectories x[1..T] per answer"
+edge prereg -> feat "frozen plan (RULE-5)" dashed
+edge feat -> clf "features + labels"
+edge clf -> bundle "scalars fetched (bal-acc 0.71)"
+edge bundle -> stats "/analyze"
+edge stats -> daudit "claim C-001"
+edge stats -> caudit "claim C-001"
+edge daudit -> verdict "leakage clean"
+edge caudit -> verdict "Survives: NO"
 ```
 
 1. Dataset ref + hash: `experiment.json:7-13`; qid counts: `runs/RUN-001/dataset.hash:3`.
@@ -98,12 +174,11 @@ Glyphs: ✅ done · ▶ active · ⛔ blocked · ✗ dead-end · ⊘ superseded 
 
 ### Dependency & retraction-cascade graph
 
-```
-EXP-spectral-length-bias   (root; parent: none)   ✗ dead-end / retracted
-        '-- (no children — single-node program; the C-001 retraction cascades nowhere)
+```graph
+node exp "EXP-spectral-length-bias\n(✗ dead-end / retracted)" .engine
 ```
 
-**How this graph is built:** nodes are the ledger's experiment entries; tree edges come from each node's `parent:` in `atlas.yaml` (the single node declares `parent: null`, `atlas.yaml:13`); evidence edges come from `_Depends:_` annotations in each experiment's `runs.md` — here `runs.md` declares only INTRA-experiment node edges (T-001 → T-002 → T-003 → T-004 → T-AUDIT, e.g. `runs.md:67,84,118,159`) and no cross-experiment `_Depends:_`, so no claim elsewhere cites the retracted C-001 (a claim citing a RETRACTED dependency must cascade — `/drift` sweeps this). The graph is DECLARED structure; no undeclared cross-experiment dependencies are currently known (STATUS.md drift check: "ledger and experiment dirs agree", `STATUS.md:32`).
+**How this graph is built:** a single-node program — the one experiment has no children, so the C-001 retraction cascades nowhere. Nodes are the ledger's experiment entries; tree edges come from each node's `parent:` in `atlas.yaml` (the single node declares `parent: null`, `atlas.yaml:13`); evidence edges come from `_Depends:_` annotations in each experiment's `runs.md` — here `runs.md` declares only INTRA-experiment node edges (T-001 → T-002 → T-003 → T-004 → T-AUDIT, e.g. `runs.md:67,84,118,159`) and no cross-experiment `_Depends:_`, so no claim elsewhere cites the retracted C-001 (a claim citing a RETRACTED dependency must cascade — `/drift` sweeps this). The graph is DECLARED structure; no undeclared cross-experiment dependencies are currently known (STATUS.md drift check: "ledger and experiment dirs agree", `STATUS.md:32`).
 
 ### Method battery
 
@@ -128,17 +203,107 @@ EXP-spectral-length-bias   (root; parent: none)   ✗ dead-end / retracted
 
 #### The science (hypothesis & motivation)
 
-**Why it died (the lesson, first):** the classifier really does predict something — the label-permutation null PASSES at z = +6.2 (`audit.md:36`) — but what it predicts is **answer length**, not hallucination. Hallucinated answers are systematically longer (median 142 vs 38 tokens, Mann-Whitney p = 9.4e-5, `audit.md:43`); the wavelet DC/low-frequency band energy tracks length (Spearman ρ = 0.79, `audit.md:44`); and once length is regressed out, balanced accuracy collapses to 0.53, CI [0.49, 0.57] ≈ chance (`audit.md:45-46`). Probes 2–4 of the confound audit all FAIL (`audit.md:67-71`), the cumulative-AND gate returns `Survives: NO` (`audit.md:86`), and H-001's own falsification criterion is met (`hypothesis.md:17-21`). The independent results-verifier issues REJECT — not BLOCKED, because the metric WAS logged and is scorable (`verdict.md:21`) — and the experiment is retracted (`trace/EXP-spectral-length-bias.md:25`).
+**Why it died (the lesson, first):** the classifier (the dividing-line learner) really does predict something — the label-permutation null PASSES at z = +6.2 (`audit.md:36`) — but what it predicts is **answer length**, not hallucination. Hallucinated answers are systematically longer (median 142 vs 38 tokens; Mann-Whitney p = 9.4e-5 — a standard rank test saying a length gap this lopsided would arise by chance far less than once in ten thousand times; `audit.md:43`); the detector's slow-drift summary band (the wavelet DC/low-frequency band energy) tracks length (Spearman ρ = 0.79 — a 0-to-1 lock-step scale; `audit.md:44`); and once length is regressed out, balanced accuracy collapses to 0.53, CI [0.49, 0.57] ≈ chance (`audit.md:45-46`). Probes 2–4 of the confound audit all FAIL (`audit.md:67-71`), the cumulative-AND gate — the promised all-four-must-pass rule — returns `Survives: NO` (`audit.md:86`), and H-001's own falsification criterion is met (`hypothesis.md:17-21`). The independent results-verifier issues REJECT — not BLOCKED, because the metric (the promised score) WAS logged and is scorable (`verdict.md:21`) — and the experiment is retracted (`trace/EXP-spectral-length-bias.md:25`).
 
-**Fixture framing (honest):** this whole experiment is a synthetic acceptance fixture (`fixture: true`, `experiment.json:40`; `approved: "fixture — no human sign-off"`, `experiment.json:39`). It re-enacts the proteus Eksperyment-1 self-retraction to prove the harness's confound-audit gate works (`README.md:1-6`). The numbers are the fixture's canonical numbers, consistent across the bundle/stats/audit, but no real GPU run is reproducible from this repo. It is excluded from real findings (`atlas.yaml:21`).
+**Fixture framing (honest):** this whole experiment is a synthetic acceptance fixture (`fixture: true`, `experiment.json:40`; `approved: "fixture — no human sign-off"`, `experiment.json:39`). It re-enacts the proteus "Eksperyment 1" self-retraction (proteus = the team's earlier internal research program; its first experiment found — and then itself retracted — exactly this kind of length-confounded detector) to prove the harness's confound-audit gate works (`README.md:1-6`). The numbers are the fixture's canonical numbers, consistent across the bundle/stats/audit, but no real computer run is re-executable from this project (the run code never ships with the fixture). It is excluded from real findings (`atlas.yaml:21`).
 
 **The full H-001 card** (`hypothesis.md:8-49`):
 
 - **Statement:** "Wavelet-band energy of H-Neuron activation trajectories detects hallucination" (`hypothesis.md:8`).
-- **Prediction (EARS):** "When an L2-regularized logistic classifier on the Daubechies-4 (3-level) wavelet-band energy features of H-Neuron activation trajectories is evaluated on the qid-disjoint held-out fold (keyed by question id, the unit of scientific interest), it shall achieve balanced_accuracy >= 0.65 (chance = 0.50)." Variant B: delta over chance >= 0.15 with the pre-registered 95% CI (bootstrap BCa over qids, n=2000) excluding 0 (`hypothesis.md:10-16`).
-- **Kill condition:** "balanced_accuracy on the qid-disjoint held-out fold <= chance + margin (i.e. <= 0.55), OR the positive signal is explained by a confound (the confound-audit returns `Survives: NO`). Either observation REJECTS H-001." (`hypothesis.md:17-21`). The second leg is the one that fired.
-- **Named confounds (pre-registered, each mapping to one RULE-6 audit leg):** label-permutation null (K=1000); **answer length as the pre-named PRIMARY confound** (DC-band energy ≈ mean signal magnitude ≈ length; fixed-32 resampling entangles them further); statistic-swap to length-invariant wavelet scattering; alt-preprocessing dropping the fixed-32 resampling (`hypothesis.md:22-37`).
-- **Motivation/novelty:** a cheap spectral hallucination detector from internal H-Neuron dynamics, which must beat length/perplexity heuristics — "the open question is precisely whether a spectral feature adds signal BEYOND answer length" (`hypothesis.md:43-47`). The answer turned out to be: it does not.
+- **Prediction (EARS):** "When an L2-regularized logistic classifier on the Daubechies-4 (3-level) wavelet-band energy features of H-Neuron activation trajectories is evaluated on the qid-disjoint held-out fold (keyed by question id, the unit of scientific interest), it shall achieve balanced_accuracy >= 0.65 (chance = 0.50)." Variant B: delta over chance >= 0.15 with the pre-registered 95% CI (bootstrap BCa over qids, n=2000) excluding 0 (`hypothesis.md:10-16`). *In plain words: teach a simple dividing-line learner on the equalizer-band summaries, score it once on the final-exam half (split so no question — qid, question id — sits on both sides), and demand at least 0.65 on the coin-toss-is-0.50 scale; or equivalently, an advantage over guessing of at least 0.15 whose plausible range, computed by a standard resampling method over the exam questions, excludes zero.*
+- **Kill condition:** "balanced_accuracy on the qid-disjoint held-out fold <= chance + margin (i.e. <= 0.55), OR the positive signal is explained by a confound (the confound-audit returns `Survives: NO`). Either observation REJECTS H-001." (`hypothesis.md:17-21`). *In plain words: the claim dies if the exam score is barely better than guessing, OR if the kill-it checks show the score is explained by something boring. The second leg is the one that fired.*
+- **Named confounds (pre-registered, each mapping to one RULE-6 audit leg):** label-permutation null (K=1000); **answer length as the pre-named PRIMARY confound** (DC-band energy ≈ mean signal magnitude ≈ length; fixed-32 resampling entangles them further); statistic-swap to length-invariant wavelet scattering; alt-preprocessing dropping the fixed-32 resampling (`hypothesis.md:22-37`). *In plain words, the four promised checks: (1) shuffle the labels to measure what luck alone scores; (2) test whether sheer answer length explains the score — "fixed-32 resampling" is the preparation step that stretches every activity recording to exactly 32 points, which can blur an answer's length into its energy summary; (3) re-score using a variant of the maths tool deliberately blind to length; (4) re-run with the stretch-to-32 step removed entirely.*
+- **Motivation/novelty:** a cheap spectral hallucination detector from internal H-Neuron dynamics, which must beat cheap heuristics such as answer length or perplexity (a standard score of how "surprised" a model is by its own words) — "the open question is precisely whether a spectral feature adds signal BEYOND answer length" (`hypothesis.md:43-47`). The answer turned out to be: it does not.
+
+#### In plain words — what we did and what we found
+
+The story in one breath: a detector for AI hallucinations (answers an AI confidently makes up)
+scored impressively on a fair exam, cleared every bar promised in advance for *success* — and
+was then thrown out, because a second set of promised checks showed it had learned to detect
+**how long an answer is**, not whether it was made up. Hallucinated answers in this data simply
+ramble. Below is the same walk the engineering section makes, step for step, in plain words.
+(Reminder from the top of this document: the whole experiment is a staged teaching example —
+the numbers are internally consistent but no run can be re-executed from here.)
+
+1. **The data goes in.** Thousands of recorded question-and-answer exchanges from 18 different
+   AI models, each answer labelled truthful or hallucinated, arrive already split into a
+   learning set and a final-exam set — 1,647 distinct questions on one side, 412 on the other,
+   and a mechanical check confirming **zero questions appear on both sides** (so the exam
+   cannot be passed by remembering). About a fifth of the raw material was dropped before the
+   split for boring reasons (a missing label, an empty recording), dropped the same way for
+   both kinds of answers so the dropping itself could not tilt the result.
+2. **The raw signal.** For every answer, the team has a recording of activity from special
+   measurement points inside the AI — for each word the AI wrote, a reading of how strongly
+   each measurement point fired. Picture a wiggly line per measurement point, one point on the
+   line per word of the answer.
+3. **Stretch to one size.** Answers have different lengths, so every wiggly line is stretched
+   or squeezed to exactly 32 points, putting all answers on a common ruler. Remember this
+   step — the designers themselves flagged it in writing, at design time, as the step most
+   likely to cause trouble, and trouble is exactly what it caused.
+4. **Summarize the wiggle.** A standard mathematical tool (a *wavelet transform* — think of the
+   graphic equalizer on a stereo, which splits sound into bass, mid and treble) splits each
+   32-point line into four "bands", from slow drift to fast jitter, and records how much energy
+   sits in each band. Each answer is now a short list of energy numbers instead of a long
+   recording. The numbers are then put on a comparable scale separately for each of the 18 AI
+   models, so that one chatty model cannot dominate the picture.
+5. **Teach a simple learner — without cheating.** A basic statistical learner (the kind that
+   draws one dividing line through the numbers, with a brake that stops it from memorizing) is
+   taught to separate truthful from hallucinated answers using only those energy numbers. All
+   tuning happens inside the learning set, in rotating internal rehearsals grouped by question,
+   and every scaling rule is computed from the rehearsal portion only — a discipline that
+   prevents information about the exam leaking into the training.
+6. **One look at the exam.** The final-exam set is scored **exactly once**: 0.71 on the fair
+   coin-toss-is-0.50 scale, comfortably above the success bar of 0.65 that had been promised in
+   the sealed plan. Five complete re-runs with different random starting points agreed, so it
+   was no fluke of randomness.
+7. **The evidence folder.** The run leaves behind its sealed evidence: the exact settings as
+   actually used, the five random starting points, the fingerprint of the dataset, the exact
+   version of every software piece, and the identity of the rented computer — enough to
+   reconstruct where every number came from.
+8. **The scorecard.** From that evidence the analysis step produces the claim card: 0.71 with
+   its plausible range [0.66, 0.76], an advantage of +0.21 over coin-tossing, and a
+   significance figure that already accounts for the roughly 3,600 separate comparisons the
+   study quietly makes (many measurement points × four bands × 18 models) — without that
+   correction, sheer volume of comparisons would hand you "discoveries" for free.
+
+**What the numbers mean** — and the part that makes this example worth keeping:
+
+- The **luck check**: shuffle the truthful/hallucinated labels at random 1,000 times and
+  re-score. Luck alone centres on 0.50 and barely moves; the real 0.71 sits 6.2 luck-units
+  above that. Verdict: the detector genuinely predicts *something*. This check passed — and
+  here is the lesson the fixture exists to teach: **passing it is necessary but proves
+  nothing about WHAT is being predicted.**
+- The **boring-explanation hunt** (three checks, all promised in advance — answer length was
+  even named in the sealed plan as the number-one suspect): (a) hallucinated answers turn out
+  to be much longer than truthful ones (median 142 vs 38 word-pieces — a difference this
+  lopsided would arise by chance far less than once in a thousand times); (b) the detector's
+  favourite energy band tracks answer length at 0.79 on a 0-to-1 lock-step scale; (c) remove
+  length's influence mathematically — in effect comparing answers of similar length against
+  each other, so length itself can no longer help — and the score collapses to 0.53, plausible range
+  [0.49, 0.57] — statistically a coin toss. A further probe swapped in a variant of the maths
+  tool that is deliberately blind to length: score 0.54. And re-running without the
+  stretch-to-32 step (the design-time suspect) kept only about a quarter of the original
+  advantage, far below the promised keep-at-least-80% bar.
+- **The promised gate**: all four checks must pass, or the claim dies; a check that cannot be
+  scored counts as a failure, not a pass; no majority vote. One passed, three failed — the
+  claim died. Crucially for honesty, the pass/fail bars of these checks were written down and
+  time-stamped at 14:03 that day, BEFORE the first check was computed at 15:20 — so the
+  failure is a genuine catch, not a bar moved after the fact to engineer a kill.
+- **The verdict**: an independent referee (not the experimenters) read the evidence and ruled
+  REJECT — the claim is scorable, it simply fails on the merits — and the experiment was
+  formally retracted. The referee's distinction matters: "rejected" means *we measured it and
+  it is wrong*; a different label exists for *the measurement never happened*.
+
+**How it could have fooled us — and what saved us:** without the confound checks, this
+detector ships: 0.71, a sealed success bar cleared, an astronomically small luck probability.
+Every safeguard that caught it was put in place **before** the data could argue back: the
+suspect (answer length) was named in the sealed plan; the raw length statistics were logged
+during the run itself, before any audit; the check thresholds were frozen pre-computation; and
+the final word belonged to someone who had no stake in the result. The kept lesson, in one
+line: a detector that beats luck has only proven it detects *something* — you must promise in
+advance how you will find out *what*, or you will ship a length-meter labelled as a lie
+detector. And the dead end stays on the project map with this lesson attached, because the
+next idea (a length-proof version of the same detector) starts exactly where this one fell.
 
 #### How it works — mechanics
 
