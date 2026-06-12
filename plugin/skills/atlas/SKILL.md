@@ -97,8 +97,11 @@ ML literacy (AUROC, logistic probe, permutation null need no gloss); explain onl
 to THIS project. After assembling ATLAS.md AND clearing the layman gate, `/atlas` MUST spawn the
 `paper-author` agent (subagent type `order-67-research-harness:paper-author:paper-author`; returns
 `## PaperReadinessReport` with a draft skeleton, findings, and detailed author-questions) and
-revise the flagged sections to answer its questions IN the text — up to 3 rounds. Still NEEDS
-DETAIL after round 3 → ship anyway, carry the unresolved findings verbatim into `## AtlasReport`.
+revise the flagged sections to answer its questions IN the text and re-spawn, **LOOPING UNTIL the
+agent returns READY-TO-DRAFT (convergence)** — not a fixed count but a hard cap of **10 rounds**.
+Still NEEDS DETAIL after round 10 → ship anyway, carry the unresolved findings verbatim into
+`## AtlasReport`. (The paper gate runs to convergence, unlike the layman gate's fixed 3-round budget,
+because paper-readiness is a completeness target the author can iteratively close.)
 Skip the gate only when NO paper/science/methods section changed. The paper-author judges
 COMPLETENESS-OF-THE-RECORD (can I write the paper?), never correctness (results-verifier /
 peer-reviewer) and never plain-language (layman-judge).
@@ -282,14 +285,15 @@ DSL→SVG + layman panels). Board generator: `atlas.py` (PyYAML).
    "For the paper" + science + mechanics/results sections to judge (incremental mode: the rebuilt
    sections + the head). Read its `## PaperReadinessReport`. On `NEEDS DETAIL`: revise the flagged
    sections so the text itself answers every finding and detailed author-question (especially the
-   journey/motivation gaps), re-write ATLAS.md, re-spawn — max 3 rounds total. Still failing after
-   round 3 → proceed, carry the unresolved findings into the `## AtlasReport` verbatim. Skip only
-   when NO paper/science/methods section changed.
+   journey/motivation gaps), re-write ATLAS.md, re-spawn — **loop until the agent returns
+   READY-TO-DRAFT (convergence); hard cap 10 rounds**. Still NEEDS DETAIL after round 10 → proceed,
+   carry the unresolved findings into the `## AtlasReport` verbatim. Skip only when NO
+   paper/science/methods section changed.
 10. **Render:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`
    → confirms the sibling ATLAS.html path, then `grep -c 'diagram DSL error'` on it — any hit
    means a malformed diagram block: fix and re-render. On renderer error: report, continue.
 11. **Emit the combined `## AtlasReport`** (atlas.py block + Regen-mode + Sections-rebuilt +
    `Layman-gate: <PASS round n | NEEDS REWORK after 3 rounds>` + `Layman-open-findings:
-   <none | verbatim list>` + `Paper-gate: <READY-TO-DRAFT round n | NEEDS DETAIL after 3 rounds>`
+   <none | verbatim list>` + `Paper-gate: <READY-TO-DRAFT round n | NEEDS DETAIL after 10 rounds (cap)>`
    + `Paper-open-findings: <none | verbatim list>` + `Diagrams: <n> DSL blocks, <n> errors` + the
    three Outputs). If drift was flagged and fixed, say so.

@@ -65,7 +65,8 @@
   assembling ATLAS.md, /atlas MUST spawn the paper-author agent (subagent type
   order-67-research-harness:paper-author:paper-author; returns ## PaperReadinessReport with a draft
   skeleton, findings, and detailed author-questions) and revise the flagged sections to answer its
-  questions IN the text — up to 3 rounds; ship after 3 carrying residual findings into AtlasReport.
+  questions IN the text, looping until the agent returns READY-TO-DRAFT (convergence); hard cap 10
+  rounds; ship after 10 carrying residual findings into AtlasReport.
   Headings MUST start with "For the paper" (the renderer styles the panel and the paper-author
   locates the sections by that prefix). The paper-author judges COMPLETENESS-OF-THE-RECORD, never
   correctness (results-verifier/peer-reviewer) and never plain-language (layman-judge).
