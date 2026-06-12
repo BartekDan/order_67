@@ -1,6 +1,6 @@
 ---
 name: atlas
-description: Regenerate the project-level ATLAS — now THREE artifacts under experiments/_atlas/. (1) STATUS.md, the thin board rendered deterministically by skills/atlas/atlas.py from the hand-curated ledger atlas.yaml — you-are-here, the exploration TREE (every path incl. dead-ends/backtracks, each with its `why`), status table, method battery, parking lot, drift check. (2) ATLAS.md, THE deep single-place dossier (the science + the mechanics + a LAYMAN TRACK per experiment) — full falsifiable hypothesis cards, numbered pipeline walks with path:symbol:line citations into the ACTUAL run code, verbatim statistics/estimators, data & leakage controls, a mandatory "what the numbers mean, computed" derivation table per experiment (which runs, which code, which CI method, which stats.json key), repro bundles, DDR full text with trade-offs, pre-registered-vs-post-hoc threshold tables, runs & verdicts ledgers, gotchas from ALL Run Notes, PLUS mandatory "In plain words" twin sections at equal depth for non-technical readers (incl. the frozen-in-advance-vs-chosen-after story per number), gated by the layman-judge agent until a zero-background reader genuinely follows. (3) ATLAS.html, a self-contained house-editorial render of ATLAS.md produced DETERMINISTICALLY by skills/atlas/render_html.py — layman panels visually distinct; v3 diagrams are declarative flow/graph DSL blocks rendered as layered SVG (templates/diagram-dsl.md; ASCII retired EXCEPT the verbatim exploration tree). The research analog of order-66 /atlas v3. Incremental by default; --full rebuilds everything.
+description: Regenerate the project-level ATLAS — now THREE artifacts under experiments/_atlas/. (1) STATUS.md, the thin board rendered deterministically by skills/atlas/atlas.py from the hand-curated ledger atlas.yaml — you-are-here, the exploration TREE (every path incl. dead-ends/backtracks, each with its `why`), status table, method battery, parking lot, drift check. (2) ATLAS.md, THE deep single-place dossier (the science + the mechanics + a LAYMAN TRACK per experiment) — full falsifiable hypothesis cards, numbered pipeline walks with path:symbol:line citations into the ACTUAL run code, verbatim statistics/estimators, data & leakage controls, a mandatory "what the numbers mean, computed" derivation table per experiment (which runs, which code, which CI method, which stats.json key), repro bundles, DDR full text with trade-offs, pre-registered-vs-post-hoc threshold tables, runs & verdicts ledgers, gotchas from ALL Run Notes, PLUS mandatory "In plain words" twin sections at equal depth for non-technical readers (incl. the frozen-in-advance-vs-chosen-after story per number), gated by the layman-judge agent until a zero-background reader genuinely follows, AND a mandatory "For the paper" research-story track (the cross-experiment journey + per-experiment motivation/why-this-experiment/bare-bones-methods/cite-this-artifact narrative) gated by the paper-author agent until an ML engineer new to the project could draft the paper from it alone. (3) ATLAS.html, a self-contained house-editorial render of ATLAS.md produced DETERMINISTICALLY by skills/atlas/render_html.py — layman panels visually distinct; v3 diagrams are declarative flow/graph DSL blocks rendered as layered SVG (templates/diagram-dsl.md; ASCII retired EXCEPT the verbatim exploration tree). The research analog of order-66 /atlas v3. Incremental by default; --full rebuilds everything.
 whenToUse: Invoked when the user is lost about overall project state, wants the cross-experiment map, or asks how an experiment ACTUALLY works / where a reported number comes from. Triggered by "/atlas", "where are we", "what's the project status", "show the map/board", "what did we try and drop", "how does EXP-X actually work", "where does that number come from", "regenerate the atlas", and at the end of a working session or whenever a path is started, blocked, dead-ended, superseded, deferred, or backtracked. Prefer this over reading experiment.json files one by one.
 isEnabled: test -d experiments
 ---
@@ -20,7 +20,7 @@ under `experiments/_atlas/`:
    `experiments/_atlas/atlas.yaml` (PyYAML required). You-are-here, the exploration tree with
    per-dead-end `why`, status table, method battery, cross-cutting truths, parking lot, drift
    check. Unchanged from v1.
-2. **`ATLAS.md`** — **the deep dossier: ONE place holding everything, science AND mechanics AND a layman track.**
+2. **`ATLAS.md`** — **the deep dossier: ONE place holding everything, science AND mechanics AND a layman track AND a paper-author (research-story) track.**
    Model-authored from deep sources per `templates/atlas-deep.md.tpl` (its HTML comments are the
    AUTHORING RULES — follow them, strip them from output). Per experiment: the FULL falsifiable
    H-NNN hypothesis cards; a numbered pipeline walk of what one run actually computes with
@@ -34,9 +34,13 @@ under `experiments/_atlas/`:
    load-bearing — RULE-3/RULE-6 honesty); a runs & verdicts ledger (results-verifier verdict +
    confound-audit Survives per key run); files & symbols map; and gotchas from ALL Run Notes.
    Per experiment the science narrative is followed by **"In plain words — what we did and
-   what we found"** (the layman twin — see the layman bar below). Project head: **"In plain
-   words — what this research project is doing and finding"** (the layman entry point, FIRST
-   body section), the program at a glance, **the exploration tree copied VERBATIM from the
+   what we found"** (the layman twin — see the layman bar below), then **"For the paper — why we
+   ran it, what led here, and what a paper would claim"** (the research-story twin — the journey,
+   motivation, bare-bones methods recap and cite-this artifact guide for a publication author —
+   see the paper-author bar below). Project head: **"In plain words — what this research project
+   is doing and finding"** (the layman entry point, FIRST body section), then **"For the paper —
+   the research story of this program"** (the paper entry point — the cross-experiment journey +
+   contribution + scope), the program at a glance, **the exploration tree copied VERBATIM from the
    freshly regenerated STATUS.md** (single source = atlas.yaml — never re-drawn; EXEMPT from
    the diagram DSL), a program data-flow ```flow DSL block (data → method → runs → metrics →
    gates → claim, rendered as SVG), compute & runtime surfaces inventory, data & results
@@ -75,6 +79,29 @@ questions IN the text — up to 3 rounds. Still NEEDS REWORK after round 3 → s
 the unresolved findings verbatim into the `## AtlasReport` (honesty over polish). Skip the gate
 only when NO layman/science section changed. Distinct from `/brief` (a per-experiment
 management deliverable): the layman track lives IN the dossier and covers the whole program.
+
+**The paper-author bar (binding, v3, gated by the `paper-author` agent):** an ML engineer fluent
+in ML/statistics but with ZERO prior knowledge of THIS project, reading the dossier, must be able
+to DRAFT every IMRaD section of a research paper from it ALONE. This is the third track, distinct
+from the other two: not a plain-words translation (layman bar) and not a reference walk (the
+mechanics) — it is the **research story**. The project head's "For the paper — the research story
+of this program" gives the program's narrative arc: the question and why it matters, the
+one-sentence contribution, the chronological JOURNEY across experiments (each link stating what the
+prior result/gap implied that made the next experiment necessary), the through-line findings (the
+Discussion spine), and the scope. Each experiment's "For the paper — why we ran it, what led here,
+and what a paper would claim" gives: the motivation + journey link, the hypothesis in publication
+terms, a bare-bones methods recap that names every project-specific method (pointing into the
+mechanics/tables for exact symbols, never restating them), a CITE-THIS reading guide (which result
+artifact/key/commit backs each headline number), and what a paper would claim + its limits. Assume
+ML literacy (AUROC, logistic probe, permutation null need no gloss); explain only what is specific
+to THIS project. After assembling ATLAS.md AND clearing the layman gate, `/atlas` MUST spawn the
+`paper-author` agent (subagent type `order-67-research-harness:paper-author:paper-author`; returns
+`## PaperReadinessReport` with a draft skeleton, findings, and detailed author-questions) and
+revise the flagged sections to answer its questions IN the text — up to 3 rounds. Still NEEDS
+DETAIL after round 3 → ship anyway, carry the unresolved findings verbatim into `## AtlasReport`.
+Skip the gate only when NO paper/science/methods section changed. The paper-author judges
+COMPLETENESS-OF-THE-RECORD (can I write the paper?), never correctness (results-verifier /
+peer-reviewer) and never plain-language (layman-judge).
 
 ### The ledger schema (`experiments/_atlas/atlas.yaml`) — unchanged
 ```yaml
@@ -154,6 +181,15 @@ drift) extended with `Regen-mode`, `Sections-rebuilt`, and
   start with "In plain words" (the renderer styles the panel and the layman-judge locates the
   sections by that prefix). The layman-judge gate (see the layman bar) runs on every
   regeneration that touched any layman/science section.
+- **The paper-author track is mandatory and judged.** The head carries "For the paper — the
+  research story of this program" (the paper entry point, right after the layman entry); every
+  experiment section carries "For the paper — why we ran it, what led here, and what a paper would
+  claim" between the layman twin and the mechanics. Headings MUST start with "For the paper" (the
+  renderer styles the teal narrative panel and the paper-author locates the sections by that
+  prefix). The paper-author gate (see the paper-author bar) runs after the layman gate on every
+  regeneration that touched any paper/science/methods section. The journey/motivation IS the
+  deliverable here: a section that documents WHAT happened but not WHY-this-experiment-and-why-now
+  fails the paper bar even when its numbers are complete.
 - **ATLAS.html is render-only** (self-contained: inline CSS, fonts via `@import` in `<style>`,
   no external files, no JS). Authoring content in it that is not in ATLAS.md breaks the
   single-source rule.
@@ -215,12 +251,18 @@ DSL→SVG + layman panels). Board generator: `atlas.py` (PyYAML).
 5. **Write each experiment section** per the template skeleton (science → **In plain words —
    what we did and what we found** (the layman twin: mirror the pipeline walk's numbering 1:1
    in everyday words, then "What the numbers mean:" with the frozen-in-advance-vs-chosen-after
-   story per number, then the gates/retraction story — see the layman bar) → mechanics incl.
-   "what the numbers mean, computed" → DDRs → prereg constants table → runs & verdicts ledger →
-   files & symbols → gotchas), applying the depth bar, the layman bar + citation rule. Diagrams
+   story per number, then the gates/retraction story — see the layman bar) → **For the paper —
+   why we ran it, what led here, and what a paper would claim** (the research-story twin:
+   motivation + the journey link from the prior result/gap, the hypothesis in publication terms,
+   a bare-bones methods recap naming every project-specific method, a CITE-THIS artifact guide,
+   and the claim + limits — see the paper bar) → mechanics incl. "what the numbers mean,
+   computed" → DDRs → prereg constants table → runs & verdicts ledger → files & symbols →
+   gotchas), applying the depth bar, the layman bar, the paper bar + citation rule. Diagrams
    per `diagram-dsl.md`.
 6. **Project head** (always rebuilt): **In plain words — what this research project is doing
-   and finding** (the layman entry point, first body section); program paragraph; the tree
+   and finding** (the layman entry point, first body section); **For the paper — the research
+   story of this program** (the paper entry point: question, contribution, the cross-experiment
+   journey, the through-line findings, scope — see the paper bar); program paragraph; the tree
    COPIED from STATUS.md (verbatim ASCII — exempt from DSL); program data-flow ```flow block +
    legend; compute & runtime surfaces; data & results artifacts; dependency/retraction ```graph
    block + "how this graph is built" (+ discrepancies or "none known"); method battery;
@@ -235,10 +277,19 @@ DSL→SVG + layman panels). Board generator: `atlas.py` (PyYAML).
    the text itself answers every finding and question, re-write ATLAS.md, re-spawn — max 3
    rounds total. Still failing after round 3 → proceed, carry the unresolved findings into the
    `## AtlasReport` verbatim. Skip only when NO layman/science section changed.
-9. **Render:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`
+9. **Paper-author gate:** AFTER the layman gate clears, spawn the `paper-author` agent
+   (`order-67-research-harness:paper-author:paper-author`) with the ATLAS.md path and the list of
+   "For the paper" + science + mechanics/results sections to judge (incremental mode: the rebuilt
+   sections + the head). Read its `## PaperReadinessReport`. On `NEEDS DETAIL`: revise the flagged
+   sections so the text itself answers every finding and detailed author-question (especially the
+   journey/motivation gaps), re-write ATLAS.md, re-spawn — max 3 rounds total. Still failing after
+   round 3 → proceed, carry the unresolved findings into the `## AtlasReport` verbatim. Skip only
+   when NO paper/science/methods section changed.
+10. **Render:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`
    → confirms the sibling ATLAS.html path, then `grep -c 'diagram DSL error'` on it — any hit
    means a malformed diagram block: fix and re-render. On renderer error: report, continue.
-10. **Emit the combined `## AtlasReport`** (atlas.py block + Regen-mode + Sections-rebuilt +
+11. **Emit the combined `## AtlasReport`** (atlas.py block + Regen-mode + Sections-rebuilt +
    `Layman-gate: <PASS round n | NEEDS REWORK after 3 rounds>` + `Layman-open-findings:
-   <none | verbatim list>` + `Diagrams: <n> DSL blocks, <n> errors` + the three Outputs). If
-   drift was flagged and fixed, say so.
+   <none | verbatim list>` + `Paper-gate: <READY-TO-DRAFT round n | NEEDS DETAIL after 3 rounds>`
+   + `Paper-open-findings: <none | verbatim list>` + `Diagrams: <n> DSL blocks, <n> errors` + the
+   three Outputs). If drift was flagged and fixed, say so.

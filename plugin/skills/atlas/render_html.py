@@ -25,7 +25,8 @@ v3 additions:
   rendered as deterministic layered SVG diagrams (boxes, labeled arrows, area groups) instead
   of ASCII art. Plain ``` blocks still render as monospace <pre> (legacy/back-compat). A DSL
   block that fails to parse falls back to <pre> with the error noted — never a crash.
-- Headings starting with "In plain words" open a visually distinct layman panel that wraps
+- Headings starting with "In plain words" open a visually distinct layman panel; headings
+  starting with "For the paper" open a distinct (teal) research-narrative panel. Each wraps
   the whole section (until the next heading of the same or higher level).
 """
 from __future__ import annotations
@@ -480,6 +481,9 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
                 if text.lower().startswith("in plain words"):
                     out.append('<section class="layman">')
                     layman_lvl = lvl
+                elif text.lower().startswith("for the paper"):
+                    out.append('<section class="paper">')
+                    layman_lvl = lvl
                 if lvl == 2:
                     nav.append({"lvl": 2, "text": re.sub(r"[`]", "", text), "id": hid})
                 elif lvl == 3 and text.startswith("`"):
@@ -640,6 +644,16 @@ section.layman h2,section.layman h3,section.layman h4{margin-top:22px}
 section.layman h4{color:#9a7510}
 section.layman p{font-size:16px;line-height:1.72}
 section.layman ol li,section.layman ul li{font-size:15.5px;line-height:1.66;margin-bottom:9px}
+section.paper{background:linear-gradient(135deg,rgba(30,95,110,.07),rgba(74,93,35,.045));
+border:1px solid var(--soft-line);border-left:4px solid var(--teal);border-radius:6px;
+padding:6px 26px 14px;margin:30px 0 34px;position:relative}
+section.paper::before{content:'FOR THE PAPER — RESEARCH NARRATIVE';position:absolute;top:-9px;left:18px;
+background:var(--paper);padding:0 8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;
+letter-spacing:.16em;color:var(--teal);font-weight:600}
+section.paper h2,section.paper h3,section.paper h4{margin-top:22px}
+section.paper h4{color:#16505d}
+section.paper p{font-size:15.5px;line-height:1.7}
+section.paper ol li,section.paper ul li{font-size:15px;line-height:1.64;margin-bottom:8px}
 ol{margin:0 0 14px 24px;max-width:860px}
 ol li{margin-bottom:7px}
 table{border-collapse:collapse;width:100%;margin:0 0 20px;font-size:13.5px;background:var(--cream)}

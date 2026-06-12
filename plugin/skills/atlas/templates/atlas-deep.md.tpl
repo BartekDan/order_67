@@ -1,5 +1,5 @@
 <!--
-  Template-rev: 2.0   (bump on ANY structural change; /atlas escalates to --full on mismatch)
+  Template-rev: 3.0   (bump on ANY structural change; /atlas escalates to --full on mismatch)
   ATLAS.md template for order-67 /atlas v3 — THE deep single-place dossier for a research
   project (the science + the mechanics + the LAYMAN TRACK). Sits beside STATUS.md (the thin board atlas.py renders
   from atlas.yaml) and is rendered to ATLAS.html by skills/atlas/render_html.py.
@@ -49,6 +49,27 @@
   panel styling on that prefix; the layman-judge locates sections by it). A retraction story is
   layman GOLD — tell it straight: what looked true, what test caught it, what the lesson was.
 
+  THE PAPER BAR (v3, binding, enforced by the paper-author agent): the "For the paper" track must
+  let an ML engineer who is fluent in ML/statistics but has NEVER seen this project draft every
+  IMRaD section of a research paper from this document ALONE. It is NOT a plain-words translation
+  (that is the layman bar) and NOT a reference walk (that is the mechanics) — it is the RESEARCH
+  STORY: the project head's "For the paper" gives the program's narrative arc (the question, why
+  this line of work, the chronological journey EXP→EXP with what each result implied for the next,
+  the through-line findings, the one-sentence contribution, the scope). Each experiment's "For the
+  paper" gives: WHY this experiment was run and what the prior result/gap motivated it (the
+  journey link), the hypothesis in publication terms, a bare-bones methods recap that names every
+  project-specific method (pointing into the mechanics/tables for exact symbols, never restating
+  them), a reading-guide to the artifacts a paper would CITE (which result file/key/commit backs
+  which claim), what a paper would CLAIM here and the limits. Assume ML literacy (AUROC, logistic
+  probe, permutation null need no gloss); explain only what is specific to THIS project. After
+  assembling ATLAS.md, /atlas MUST spawn the paper-author agent (subagent type
+  order-67-research-harness:paper-author:paper-author; returns ## PaperReadinessReport with a draft
+  skeleton, findings, and detailed author-questions) and revise the flagged sections to answer its
+  questions IN the text — up to 3 rounds; ship after 3 carrying residual findings into AtlasReport.
+  Headings MUST start with "For the paper" (the renderer styles the panel and the paper-author
+  locates the sections by that prefix). The paper-author judges COMPLETENESS-OF-THE-RECORD, never
+  correctness (results-verifier/peer-reviewer) and never plain-language (layman-judge).
+
   DIAGRAMS (v3): declarative ```flow / ```graph DSL blocks (grammar + binding authoring rules in
   templates/diagram-dsl.md) — render_html.py lays them out deterministically as SVG. One idea
   per diagram, <= ~15 nodes, EVERY edge labeled with what moves. ASCII art is retired for
@@ -65,7 +86,7 @@ generated_at: {{GENERATED_AT}}
 project: {{PROJECT}}
 git_anchor: {{GIT_ANCHOR}}
 regen_mode: {{REGEN_MODE}}
-template_rev: "2.0"
+template_rev: "3.0"
 ---
 
 # {{PROJECT}} — ATLAS (deep dossier)
@@ -89,6 +110,19 @@ template_rev: "2.0"
      in this document:" — every recurring headline number explained in words, including whether
      its pass/fail rule was promised in advance. Where the program's story is a retraction,
      tell it straight — what looked true, what test caught it, what lesson was kept. -->
+
+## For the paper — the research story of this program
+
+{{PROGRAM_PAPER_NARRATIVE}}
+<!-- THE PAPER ENTRY POINT (judged by paper-author — see PAPER BAR above). For an ML engineer
+     fluent in ML/stats but NEW to this project, tasked to write the paper: (1) the research
+     question and why it matters, in publication terms; (2) the one-sentence CONTRIBUTION claim;
+     (3) the JOURNEY — a chronological arc across the experiments, each link stating what the
+     previous result/gap implied that made the next experiment necessary ("X showed Y, so we ran
+     Z to test W"); (4) the through-line findings that recur across experiments (the paper's
+     Discussion spine); (5) the scope and the headline limits. Assume ML literacy; explain only
+     project-specific names/choices. Point forward to the inventories/tables for specifics; do not
+     restate them. This is the program's Introduction + Discussion spine, not a summary of numbers. -->
 
 ## The program at a glance
 
@@ -193,6 +227,23 @@ this). The graph is DECLARED structure; {{DEP_GRAPH_DISCREPANCIES}}.
      words (for a retraction: what looked true, which probe caught it, the lesson kept). No
      unexplained term at first use; no file paths; no pointing at the expert sections.
      Coverage and length comparable to the mechanics — a translation, not a teaser. -->
+
+#### For the paper — why we ran it, what led here, and what a paper would claim
+
+{{PAPER_NARRATIVE}}
+<!-- THE PAPER TWIN (judged by paper-author — see PAPER BAR). For an ML engineer new to the
+     project, writing the paper. Cover, in order: (1) WHY this experiment exists — the motivation
+     and the JOURNEY LINK: what the previous experiment's result or an open gap implied that made
+     THIS one necessary (and, if applicable, what it set up for the next). (2) The hypothesis in
+     publication terms (what was predicted, what would falsify it) and which prereg/tier governed
+     it. (3) A bare-bones METHODS recap: name every project-specific method/dataset/estimator a
+     reader meets here, in one clause each, and POINT to the mechanics walk + tables for the exact
+     symbols/formulas (do not restate them). (4) A CITE-THIS reading guide: which result artifact
+     (file/key/commit/hash) backs each headline number a paper would report. (5) What a paper would
+     CLAIM from this experiment and the scope/limits on that claim. Assume ML literacy; explain
+     only what is specific to THIS project. The test the paper-author applies: could I draft the
+     Intro-motivation, Methods, Results-sourcing, and Discussion for this experiment from here
+     ALONE, without emailing the authors? -->
 
 #### How it works — mechanics
 
