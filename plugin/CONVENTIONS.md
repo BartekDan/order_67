@@ -126,6 +126,8 @@ field here, update `block-schemas.tsv` in the same change.**
 | `## RunList` / `## RunStatus` / `## ArtifactOwnership` | run-reader | any skill | (see run-reader AGENT.md) |
 | `## ReproReport` | reproducibility-checker | results-verifier, /paper | `Run`, `Seed-recorded`, `Config-snapshot`, `Env-pinned`, `NeurIPS-4-8`, `Verdict` |
 | `## Review` | peer-reviewer | /paper | `Recommendation`, `Scores`, `Major-issues`, `Minor-issues` |
+| `## NoveltyScan` | novelty-scout | /novelty | `Contribution`, `Verdict` (NOVEL/NOVEL-COMBINATION/INCREMENTAL/PRIOR-ART/UNVERIFIED), `Closest-prior-art`, `What-is-new`, `Defensible-claim`, `Reviewer-objection`, `Confidence` |
+| `## NoveltyReport` | /novelty | user → /paper | `Experiment`, `Artifact`, `Contributions-scanned`, `Novel`, `Incremental`, `Prior-art`, `Open-gaps` |
 | `## FigureReport` | figure-smith | /analyze, /paper | `Figure`, `Lint`, `Violations`, `Path` |
 
 **The four+one mechanical verdict strings** (`## Verdict` line, one per line, nothing else):

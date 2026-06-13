@@ -20,6 +20,8 @@ BriefReport Experiment,Artifact,Bottom-line,Grade,Next-actions
 DriftReport Scanned,Consolidated,Retractions,Rigor-debt-overdue,Pruned
 ReproReport Run,Seed-recorded,Config-snapshot,Env-pinned,NeurIPS-4-8,Verdict
 Review Recommendation,Scores,Major-issues,Minor-issues
+NoveltyScan Contribution,Verdict=enum:NOVEL|NOVEL-COMBINATION|INCREMENTAL|PRIOR-ART|UNVERIFIED,Closest-prior-art,What-is-new,Defensible-claim,Reviewer-objection,Confidence
+NoveltyReport Experiment,Artifact,Contributions-scanned,Novel,Incremental,Prior-art,Open-gaps
 FigureReport Figure,Lint,Violations,Path
 RunList Experiments,Count
 RunStatus Experiment,Runs,Promoted,Halted
