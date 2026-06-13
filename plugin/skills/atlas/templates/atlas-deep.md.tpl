@@ -82,7 +82,10 @@
   ledger/board/you_are_here, the rigor-tier NESTING table, the results-verifier + the verdict enum,
   the confound-audit legs, prereg.lock + the hash + /register --amend, and a RULE-N box paraphrased
   from templates/research-rulebook.md for EVERY rule cited anywhere in the dossier — never invented);
-  the method roster (every detector/family/acronym expanded once); the metric+estimator glossary
+  the method roster — every detector explained in DEPTH (origin/external-paper + the mechanism it
+  computes, with a code-symbol cite, + the intuition for why it flags a hallucination), not merely
+  named; the recurring data/code artifacts each explained in plain terms (what it holds, who writes/
+  reads it, why it exists); the metric+estimator glossary
   (det_calib, the differently-seeded fusion variant, within-fold-vs-cross-fold SD, the control legs);
   the dataset build order + EXP-equiv/Steps + the CASE slice taxonomy + the per-experiment H-NNN
   numbering note; the recurring named findings as propositions; the reading conventions (X/Y, a/b/c
@@ -147,8 +150,11 @@ template_rev: "4.0"
      per-experiment file set, ledger/board/you_are_here, the rigor-tier NESTING table, the
      results-verifier + verdict enum, the confound-audit legs, prereg.lock + hash + /register --amend,
      and a RULE-N box (paraphrased from templates/research-rulebook.md, NEVER invented) for every RULE
-     cited anywhere in the dossier; (c) the method roster — every detector/family/acronym expanded
-     once; (d) the metric+estimator glossary — det_calib + the differently-seeded fusion variant +
+     cited anywhere in the dossier; (c) the method roster — every detector explained in DEPTH
+     (origin/paper + the mechanism with a code-symbol cite + the why-it-flags intuition), not just
+     named, PLUS the recurring data/code artifacts each explained in plain terms (what it holds, who
+     writes/reads it, why it exists); (d) the metric+estimator glossary — det_calib + the
+     differently-seeded fusion variant +
      within-fold-vs-cross-fold SD + the control legs (define EVERY estimator the body cites, e.g.
      det_roc alongside det_calib); (e) dataset build order + EXP-equiv/Steps + the
      CASE slice taxonomy (incl. the random_context alias) + the per-experiment H-NNN numbering note;

@@ -119,8 +119,11 @@ the deployment target + production constraint + the two regimes; the harness (th
 lifecycle and what each step writes, the per-experiment file set, the ledger/board/`you_are_here`,
 the rigor-tier NESTING table, the results-verifier + verdict enum, the confound-audit legs,
 `prereg.lock` + the hash + `/register --amend`, and a RULE-N box paraphrased from
-`templates/research-rulebook.md` for EVERY rule cited anywhere in the dossier); the method roster
-(every detector/family/acronym expanded once); the metric+estimator glossary (`det_calib`, the
+`templates/research-rulebook.md` for EVERY rule cited anywhere in the dossier); the method roster — every
+detector explained in DEPTH (origin/external-paper + the mechanism with a code-symbol cite + the
+intuition for why it flags a hallucination), not just named, PLUS the recurring data/code artifacts
+each explained in plain terms (what each holds, who writes/reads it, why it exists); the
+metric+estimator glossary (`det_calib`, the
 differently-seeded fusion variant, within-fold-vs-cross-fold SD, the control legs); the dataset build
 order + EXP-equiv/Steps + the CASE slice taxonomy + the per-experiment H-NNN numbering note; the
 recurring named findings as propositions; the reading conventions + an alphabetical glossary table;
