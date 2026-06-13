@@ -1,5 +1,5 @@
 <!--
-  Template-rev: 3.0   (bump on ANY structural change; /atlas escalates to --full on mismatch)
+  Template-rev: 4.0   (bump on ANY structural change; /atlas escalates to --full on mismatch)
   ATLAS.md template for order-67 /atlas v3 — THE deep single-place dossier for a research
   project (the science + the mechanics + the LAYMAN TRACK). Sits beside STATUS.md (the thin board atlas.py renders
   from atlas.yaml) and is rendered to ATLAS.html by skills/atlas/render_html.py.
@@ -71,6 +71,30 @@
   locates the sections by that prefix). The paper-author judges COMPLETENESS-OF-THE-RECORD, never
   correctness (results-verifier/peer-reviewer) and never plain-language (layman-judge).
 
+  THE ONBOARDING BAR (v4, binding, enforced by the paper-author agent as an EXTENSION of the paper
+  bar): a technical reader fluent in ML/stats but who has NEVER seen THIS harness must be able to read
+  the WHOLE dossier top-to-bottom without hitting a term they cannot resolve from the document itself.
+  The head therefore carries, right after "In plain words" and BEFORE "For the paper", a section
+  "How this research program is run — the map, the vocabulary, and how to read this dossier"
+  ({{HARNESS_PRIMER}}) that defines ONCE, ahead of any result: the deployment target + the production
+  constraint + the two regimes (A closed-book/off-board vs B open-book RAG = this dossier); the
+  harness (the slash-command lifecycle + what each step writes, the per-experiment file set, the
+  ledger/board/you_are_here, the rigor-tier NESTING table, the results-verifier + the verdict enum,
+  the confound-audit legs, prereg.lock + the hash + /register --amend, and a RULE-N box paraphrased
+  from templates/research-rulebook.md for EVERY rule cited anywhere in the dossier — never invented);
+  the method roster (every detector/family/acronym expanded once); the metric+estimator glossary
+  (det_calib, the differently-seeded fusion variant, within-fold-vs-cross-fold SD, the control legs);
+  the dataset build order + EXP-equiv/Steps + the CASE slice taxonomy + the per-experiment H-NNN
+  numbering note; the recurring named findings as propositions; the reading conventions (X/Y, a/b/c
+  per-seed, file·symbol·line, fraction==percent, box/box-only/metal/dev/o67) + an alphabetical
+  glossary table; and the cross-experiment arc + the reading-order gotcha. The test: every harness
+  term, slash-command, tier, verdict token, project nickname (EXP-equiv, CASE2, operat, the lift law,
+  the box), acronym (CETT, HHEM, BEM, PKS, qnli, FAR, ns, BAcc, DDR), dataset/slice name, or numeric
+  convention used in ANY section before it is defined in this primer is a FINDING. A dossier whose
+  science is complete but whose harness vocabulary is undefined FAILS this bar — that is the exact
+  failure this bar exists to catch (a "READY-TO-DRAFT" paper verdict previously co-existed with a
+  dossier a new engineer could not actually follow).
+
   DIAGRAMS (v3): declarative ```flow / ```graph DSL blocks (grammar + binding authoring rules in
   templates/diagram-dsl.md) — render_html.py lays them out deterministically as SVG. One idea
   per diagram, <= ~15 nodes, EVERY edge labeled with what moves. ASCII art is retired for
@@ -87,7 +111,7 @@ generated_at: {{GENERATED_AT}}
 project: {{PROJECT}}
 git_anchor: {{GIT_ANCHOR}}
 regen_mode: {{REGEN_MODE}}
-template_rev: "3.0"
+template_rev: "4.0"
 ---
 
 # {{PROJECT}} — ATLAS (deep dossier)
@@ -111,6 +135,28 @@ template_rev: "3.0"
      in this document:" — every recurring headline number explained in words, including whether
      its pass/fail rule was promised in advance. Where the program's story is a retraction,
      tell it straight — what looked true, what test caught it, what lesson was kept. -->
+
+## How this research program is run — the map, the vocabulary, and how to read this dossier
+
+{{HARNESS_PRIMER}}
+<!-- THE ONBOARDING ENTRY POINT (judged by the paper-author as the ONBOARDING BAR — see above). For a
+     technical reader who has NEVER seen this harness: define ONCE, before any result, everything the
+     rest of the dossier leans on, so they never hit an undefined term. Required coverage (full spec
+     in the ONBOARDING BAR): (a) deployment target + production constraint + the two regimes (A
+     off-board vs B = this dossier); (b) the harness — slash-command lifecycle + what each writes, the
+     per-experiment file set, ledger/board/you_are_here, the rigor-tier NESTING table, the
+     results-verifier + verdict enum, the confound-audit legs, prereg.lock + hash + /register --amend,
+     and a RULE-N box (paraphrased from templates/research-rulebook.md, NEVER invented) for every RULE
+     cited anywhere in the dossier; (c) the method roster — every detector/family/acronym expanded
+     once; (d) the metric+estimator glossary — det_calib + the differently-seeded fusion variant +
+     within-fold-vs-cross-fold SD + the control legs (define EVERY estimator the body cites, e.g.
+     det_roc alongside det_calib); (e) dataset build order + EXP-equiv/Steps + the
+     CASE slice taxonomy (incl. the random_context alias) + the per-experiment H-NNN numbering note;
+     (f) the recurring named findings as propositions; (g) reading conventions + an alphabetical
+     glossary table; (h) the cross-experiment arc + the EXP-equiv-before-EXP-01 reading-order gotcha.
+     Plain, short sentences; this is NOT the layman track (assume ML literacy) and NOT the paper
+     narrative (no journey prose) — it is the reference KEY. Heading is plain (NOT "In plain words"/
+     "For the paper" — those prefixes trigger panel styling and the layman/paper gates). -->
 
 ## For the paper — the research story of this program
 
@@ -159,7 +205,9 @@ template_rev: "3.0"
 {{#SURFACES}}| {{SURFACE}} | {{KIND}} | {{WHAT}} | {{HOW}} |
 {{/SURFACES}}
 <!-- Every CLI/script entrypoint, the remote-GPU dispatch path (host-config.json: scp → launch →
-     poll → fetch) when used, quicklook checkpoints, notebooks. Each exactly once. -->
+     poll → fetch) when used, quicklook checkpoints, notebooks. Each exactly once. NEVER print
+     secrets, private keys, usernames, or internal IPs in this table — cite `host-config.json`
+     instead (this is a shareable dossier). -->
 
 ### Data & results artifacts
 

@@ -38,7 +38,10 @@ under `experiments/_atlas/`:
    ran it, what led here, and what a paper would claim"** (the research-story twin — the journey,
    motivation, bare-bones methods recap and cite-this artifact guide for a publication author —
    see the paper-author bar below). Project head: **"In plain words — what this research project
-   is doing and finding"** (the layman entry point, FIRST body section), then **"For the paper —
+   is doing and finding"** (the layman entry point, FIRST body section), then **"How this research
+   program is run"** (the ONBOARDING primer — harness lifecycle + vocabulary, method roster,
+   metric/estimator + acronym glossary, dataset/CASE taxonomy, RULE-N box, reading conventions; the
+   reference key a new engineer reads before anything else), then **"For the paper —
    the research story of this program"** (the paper entry point — the cross-experiment journey +
    contribution + scope), the program at a glance, **the exploration tree copied VERBATIM from the
    freshly regenerated STATUS.md** (single source = atlas.yaml — never re-drawn; EXEMPT from
@@ -105,6 +108,28 @@ because paper-readiness is a completeness target the author can iteratively clos
 Skip the gate only when NO paper/science/methods section changed. The paper-author judges
 COMPLETENESS-OF-THE-RECORD (can I write the paper?), never correctness (results-verifier /
 peer-reviewer) and never plain-language (layman-judge).
+
+**The onboarding bar (binding, v4, enforced by the `paper-author` agent as an EXTENSION of the paper
+bar):** a technical reader fluent in ML/stats but with ZERO exposure to THIS harness must be able to
+read the WHOLE dossier without hitting a term they cannot resolve from the document itself. The
+project head therefore opens — right after "In plain words" and BEFORE "For the paper" — with **"How
+this research program is run — the map, the vocabulary, and how to read this dossier"**, a reference
+section (NOT a layman translation, NOT a journey narrative) that defines ONCE, ahead of any result:
+the deployment target + production constraint + the two regimes; the harness (the slash-command
+lifecycle and what each step writes, the per-experiment file set, the ledger/board/`you_are_here`,
+the rigor-tier NESTING table, the results-verifier + verdict enum, the confound-audit legs,
+`prereg.lock` + the hash + `/register --amend`, and a RULE-N box paraphrased from
+`templates/research-rulebook.md` for EVERY rule cited anywhere in the dossier); the method roster
+(every detector/family/acronym expanded once); the metric+estimator glossary (`det_calib`, the
+differently-seeded fusion variant, within-fold-vs-cross-fold SD, the control legs); the dataset build
+order + EXP-equiv/Steps + the CASE slice taxonomy + the per-experiment H-NNN numbering note; the
+recurring named findings as propositions; the reading conventions + an alphabetical glossary table;
+and the cross-experiment arc + the reading-order gotcha. The test the paper-author applies: any
+harness term, slash-command, tier, verdict token, project nickname, acronym, dataset/slice name, or
+numeric convention used in ANY section before it is defined in this primer is a finding. **A dossier
+whose science is complete but whose harness vocabulary is undefined FAILS the paper gate** — that is
+the exact gap this bar closes (a "READY-TO-DRAFT" verdict previously co-existed with a dossier a new
+engineer could not actually follow).
 
 ### The ledger schema (`experiments/_atlas/atlas.yaml`) — unchanged
 ```yaml
@@ -193,6 +218,16 @@ drift) extended with `Regen-mode`, `Sections-rebuilt`, and
   regeneration that touched any paper/science/methods section. The journey/motivation IS the
   deliverable here: a section that documents WHAT happened but not WHY-this-experiment-and-why-now
   fails the paper bar even when its numbers are complete.
+- **The onboarding primer is mandatory** (the onboarding bar). The head carries "How this research
+  program is run — the map, the vocabulary, and how to read this dossier" between "In plain words" and
+  "For the paper" — the reference key (harness lifecycle + vocabulary, method roster, metric/estimator
+  + acronym glossary, dataset/CASE taxonomy, RULE-N box, reading conventions + glossary table, the
+  arc). Its heading is PLAIN — it must NOT start with "In plain words"/"For the paper" (those prefixes
+  trigger panel styling and the layman/paper gates). The paper-author enforces it: a harness term,
+  nickname, acronym, slash-command, tier, verdict token, dataset/slice name, or numeric convention
+  used anywhere before it is defined here is a finding. Skipping or thinning this section is the
+  failure mode this bar exists to prevent (complete science + undefined harness vocabulary = a dossier
+  a new engineer cannot follow).
 - **ATLAS.html is render-only** (self-contained: inline CSS, fonts via `@import` in `<style>`,
   no external files, no JS). Authoring content in it that is not in ATLAS.md breaks the
   single-source rule.
@@ -263,7 +298,11 @@ DSL→SVG + layman panels). Board generator: `atlas.py` (PyYAML).
    gotchas), applying the depth bar, the layman bar, the paper bar + citation rule. Diagrams
    per `diagram-dsl.md`.
 6. **Project head** (always rebuilt): **In plain words — what this research project is doing
-   and finding** (the layman entry point, first body section); **For the paper — the research
+   and finding** (the layman entry point, first body section); **How this research program is run —
+   the map, the vocabulary, and how to read this dossier** (the ONBOARDING primer — see the
+   onboarding bar; defines the harness, the method roster, the metric/estimator + acronym glossary,
+   the dataset/CASE taxonomy, the RULE-N box and the reading conventions ONCE, before any result);
+   **For the paper — the research
    story of this program** (the paper entry point: question, contribution, the cross-experiment
    journey, the through-line findings, scope — see the paper bar); program paragraph; the tree
    COPIED from STATUS.md (verbatim ASCII — exempt from DSL); program data-flow ```flow block +
