@@ -87,7 +87,7 @@ _GROUP_TINTS = ["rgba(30,95,110,.06)", "rgba(212,160,23,.08)", "rgba(74,93,35,.0
                 "rgba(196,69,28,.05)", "rgba(10,10,10,.04)"]
 
 _NODE_FS, _CHAR_W, _LINE_H, _PAD_X, _PAD_Y = 12.5, 7.6, 17.0, 13.0, 10.0
-_H_GAP, _V_GAP, _WRAP_COLS = 34.0, 64.0, 26
+_H_GAP, _V_GAP, _WRAP_COLS = 42.0, 100.0, 26
 _svg_seq = itertools.count()
 
 
@@ -339,7 +339,7 @@ def _render_svg(text: str) -> str:
     placed: list[dict] = []
     for L in lbl:
         hw = len(L["text"]) * 3.1 + 6
-        for _ in range(10):
+        for _ in range(22):
             hit_lbl = any(abs(L["x"] - p["x"]) < hw + p["hw"] and abs(L["y"] - p["y"]) < 13
                           for p in placed)
             hit_node = any(L["x"] + hw > rx0 and L["x"] - hw < rx1

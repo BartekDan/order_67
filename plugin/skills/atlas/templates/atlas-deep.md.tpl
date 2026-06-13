@@ -96,7 +96,10 @@
   convention used in ANY section before it is defined in this primer is a FINDING. A dossier whose
   science is complete but whose harness vocabulary is undefined FAILS this bar — that is the exact
   failure this bar exists to catch (a "READY-TO-DRAFT" paper verdict previously co-existed with a
-  dossier a new engineer could not actually follow).
+  dossier a new engineer could not actually follow). Two specifics this bar enforces by name: (i) the
+  labelling matcher is described as a CASCADE — cheap deterministic rungs + the pure guards, with BEM only
+  as the LAST resort, never just "BEM"; (ii) every diagram carries a prose "reading" walk of what it shows,
+  so it stays followable even if the SVG layout is cramped.
 
   DIAGRAMS (v3): declarative ```flow / ```graph DSL blocks (grammar + binding authoring rules in
   templates/diagram-dsl.md) — render_html.py lays them out deterministically as SVG. One idea
