@@ -1,5 +1,5 @@
 <!--
-  Template-rev: 4.0   (bump on ANY structural change; /atlas escalates to --full on mismatch)
+  Template-rev: 4.1   (bump on ANY structural change; /atlas escalates to --full on mismatch)
   ATLAS.md template for order-67 /atlas v3 — THE deep single-place dossier for a research
   project (the science + the mechanics + the LAYMAN TRACK). Sits beside STATUS.md (the thin board atlas.py renders
   from atlas.yaml) and is rendered to ATLAS.html by skills/atlas/render_html.py.
@@ -48,6 +48,14 @@
   a translation, not a teaser. Headings MUST start with "In plain words" (the renderer keys its
   panel styling on that prefix; the layman-judge locates sections by it). A retraction story is
   layman GOLD — tell it straight: what looked true, what test caught it, what the lesson was.
+
+  THE OPEN-QUESTIONS SECTION (v3.1, filled from the curious-user agent — see SKILL.md step 8):
+  the head carries a "## Open questions — what a new reader still asks" section right after the
+  program "In plain words" section. /atlas spawns the curious-user agent (a know-nothing outsider
+  who reads the WHOLE dossier), answers its BLOCKING questions by revising the text above, and lists
+  whatever it still can't answer there, verbatim, so the gaps are VISIBLE. Ideal state: empty — then
+  say so in one line. Heading MUST start "Open questions" (the renderer keys the panel on that
+  prefix). Never invent questions to fill it; never paraphrase away the awkward ones.
 
   THE PAPER BAR (v3, binding, enforced by the paper-author agent): the "For the paper" track must
   let an ML engineer who is fluent in ML/statistics but has NEVER seen this project draft every
@@ -117,7 +125,7 @@ generated_at: {{GENERATED_AT}}
 project: {{PROJECT}}
 git_anchor: {{GIT_ANCHOR}}
 regen_mode: {{REGEN_MODE}}
-template_rev: "4.0"
+template_rev: "4.1"
 ---
 
 # {{PROJECT}} — ATLAS (deep dossier)
@@ -141,6 +149,22 @@ template_rev: "4.0"
      in this document:" — every recurring headline number explained in words, including whether
      its pass/fail rule was promised in advance. Where the program's story is a retraction,
      tell it straight — what looked true, what test caught it, what lesson was kept. -->
+
+## Open questions — what a new reader still asks
+
+{{OPEN_QUESTIONS}}
+<!-- THE NEW-READER QUESTIONS — filled by /atlas from the curious-user agent's residual
+     ## CuriousUserReport (SKILL.md step 8). The curious-user is a know-nothing outsider who read
+     this whole dossier trying to understand what the research is and found; its BLOCKING questions
+     were answered by revising the text above, and whatever it STILL could not answer is listed here
+     VERBATIM, grouped by the experiment it touches, so a human can see exactly where this dossier
+     still reads as fog. IDEAL STATE: empty — then write one line saying so, e.g. "A first-time
+     reader could follow every experiment in this document — no questions outstanding." Do NOT invent
+     questions to fill it, and do NOT paraphrase the awkward ones away: an unanswered "what did this
+     experiment actually find?" belongs here in the reader's own words. Genuinely out-of-scope
+     curiosity (funding, what's next, careers — things a dossier of what was DONE need not answer)
+     may go under a final "Beyond this document:" line. This section is the honesty receipt for the
+     new-reader pass; an empty one is earned, never assumed. -->
 
 ## How this research program is run — the map, the vocabulary, and how to read this dossier
 

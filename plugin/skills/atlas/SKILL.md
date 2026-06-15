@@ -1,6 +1,6 @@
 ---
 name: atlas
-description: Regenerate the project-level ATLAS — now THREE artifacts under experiments/_atlas/. (1) STATUS.md, the thin board rendered deterministically by skills/atlas/atlas.py from the hand-curated ledger atlas.yaml — you-are-here, the exploration TREE (every path incl. dead-ends/backtracks, each with its `why`), status table, method battery, parking lot, drift check. (2) ATLAS.md, THE deep single-place dossier (the science + the mechanics + a LAYMAN TRACK per experiment) — full falsifiable hypothesis cards, numbered pipeline walks with path:symbol:line citations into the ACTUAL run code, verbatim statistics/estimators, data & leakage controls, a mandatory "what the numbers mean, computed" derivation table per experiment (which runs, which code, which CI method, which stats.json key), repro bundles, DDR full text with trade-offs, pre-registered-vs-post-hoc threshold tables, runs & verdicts ledgers, gotchas from ALL Run Notes, PLUS mandatory "In plain words" twin sections at equal depth for non-technical readers (incl. the frozen-in-advance-vs-chosen-after story per number), gated by the layman-judge agent until a zero-background reader genuinely follows, AND a mandatory "For the paper" research-story track (the cross-experiment journey + per-experiment motivation/why-this-experiment/bare-bones-methods/cite-this-artifact narrative) gated by the paper-author agent until an ML engineer new to the project could draft the paper from it alone. (3) ATLAS.html, a self-contained house-editorial render of ATLAS.md produced DETERMINISTICALLY by skills/atlas/render_html.py — layman panels visually distinct; v3 diagrams are declarative flow/graph DSL blocks rendered as layered SVG (templates/diagram-dsl.md; ASCII retired EXCEPT the verbatim exploration tree). The research analog of order-66 /atlas v3. Incremental by default; --full rebuilds everything.
+description: Regenerate the project-level ATLAS — now THREE artifacts under experiments/_atlas/. (1) STATUS.md, the thin board rendered deterministically by skills/atlas/atlas.py from the hand-curated ledger atlas.yaml — you-are-here, the exploration TREE (every path incl. dead-ends/backtracks, each with its `why`), status table, method battery, parking lot, drift check. (2) ATLAS.md, THE deep single-place dossier (the science + the mechanics + a LAYMAN TRACK per experiment) — full falsifiable hypothesis cards, numbered pipeline walks with path:symbol:line citations into the ACTUAL run code, verbatim statistics/estimators, data & leakage controls, a mandatory "what the numbers mean, computed" derivation table per experiment (which runs, which code, which CI method, which stats.json key), repro bundles, DDR full text with trade-offs, pre-registered-vs-post-hoc threshold tables, runs & verdicts ledgers, gotchas from ALL Run Notes, PLUS mandatory "In plain words" twin sections at equal depth for non-technical readers (incl. the frozen-in-advance-vs-chosen-after story per number), gated by the layman-judge agent until a zero-background reader genuinely follows, a curious-user agent (a know-nothing outsider) first reads the whole dossier and surfaces every research question it still can't answer in a visible "Open questions" section, AND a mandatory "For the paper" research-story track (the cross-experiment journey + per-experiment motivation/why-this-experiment/bare-bones-methods/cite-this-artifact narrative) gated by the paper-author agent until an ML engineer new to the project could draft the paper from it alone. (3) ATLAS.html, a self-contained house-editorial render of ATLAS.md produced DETERMINISTICALLY by skills/atlas/render_html.py — layman panels visually distinct; v3 diagrams are declarative flow/graph DSL blocks rendered as layered SVG (templates/diagram-dsl.md; ASCII retired EXCEPT the verbatim exploration tree). The research analog of order-66 /atlas v3. Incremental by default; --full rebuilds everything.
 whenToUse: Invoked when the user is lost about overall project state, wants the cross-experiment map, or asks how an experiment ACTUALLY works / where a reported number comes from. Triggered by "/atlas", "where are we", "what's the project status", "show the map/board", "what did we try and drop", "how does EXP-X actually work", "where does that number come from", "regenerate the atlas", and at the end of a working session or whenever a path is started, blocked, dead-ended, superseded, deferred, or backtracked. Prefer this over reading experiment.json files one by one.
 isEnabled: test -d experiments
 ---
@@ -38,7 +38,9 @@ under `experiments/_atlas/`:
    ran it, what led here, and what a paper would claim"** (the research-story twin — the journey,
    motivation, bare-bones methods recap and cite-this artifact guide for a publication author —
    see the paper-author bar below). Project head: **"In plain words — what this research project
-   is doing and finding"** (the layman entry point, FIRST body section), then **"How this research
+   is doing and finding"** (the layman entry point, FIRST body section), then **"Open questions — what a
+   new reader still asks"** (the curious-user agent's residual questions, persisted verbatim and
+   visible — ideally empty), then **"How this research
    program is run"** (the ONBOARDING primer — harness lifecycle + vocabulary, method roster,
    metric/estimator + acronym glossary, dataset/CASE taxonomy, RULE-N box, reading conventions; the
    reference key a new engineer reads before anything else), then **"For the paper —
@@ -82,6 +84,19 @@ questions IN the text — up to 3 rounds. Still NEEDS REWORK after round 3 → s
 the unresolved findings verbatim into the `## AtlasReport` (honesty over polish). Skip the gate
 only when NO layman/science section changed. Distinct from `/brief` (a per-experiment
 management deliverable): the layman track lives IN the dossier and covers the whole program.
+
+**The new-reader pass (binding, v3.1, the `curious-user` agent):** the layman bar proves the prose
+is jargon-free; it does NOT prove a *newcomer* can say what an experiment was, what it found, and why
+it mattered. So before the layman gate, `/atlas` spawns the `curious-user` agent — a sharp outsider
+with zero scientific background who has never seen the project and reads the WHOLE dossier, asking the
+four newcomer questions of the program and every experiment (what was it trying to find out · what did
+it find · why did it matter · what do the numbers mean — and was the pass/fail line set before or
+after the data). Unlike the layman-judge it does not grade and does not gate; it returns
+`## CuriousUserReport` — an explain-back plus the questions it still can't answer. `/atlas` revises the
+text to answer the blocking ones (≤ 2 rounds) and then PERSISTS the residual VERBATIM into a visible
+`## Open questions — what a new reader still asks` section (ideally empty). This pass exists because a
+section can pass the jargon test and still leave a reader unable to tell what an experiment actually
+found — and those unanswered questions must be VISIBLE to a human, not silently buried in a revision.
 
 **The paper-author bar (binding, v3, gated by the `paper-author` agent):** an ML engineer fluent
 in ML/statistics but with ZERO prior knowledge of THIS project, reading the dossier, must be able
@@ -212,6 +227,14 @@ drift) extended with `Regen-mode`, `Sections-rebuilt`, and
   start with "In plain words" (the renderer styles the panel and the layman-judge locates the
   sections by that prefix). The layman-judge gate (see the layman bar) runs on every
   regeneration that touched any layman/science section.
+- **The new-reader pass is mandatory and its questions are persisted, not buried.** Before the
+  layman gate, `/atlas` spawns the `curious-user` agent (a know-nothing outsider reading the WHOLE
+  dossier) and revises the science / "In plain words" / "For the paper" content to answer every
+  **blocking** research question it raises (≤ 2 rounds). The residual questions are written VERBATIM
+  into the head's `## Open questions — what a new reader still asks` section (right after the system
+  "In plain words" section; heading MUST start with "Open questions" — the renderer keys the panel on
+  that prefix) so a human can see exactly where the dossier still reads as fog — never silently
+  dropped. Empty is the goal and is stated explicitly when reached.
 - **The paper-author track is mandatory and judged.** The head carries "For the paper — the
   research story of this program" (the paper entry point, right after the layman entry); every
   experiment section carries "For the paper — why we ran it, what led here, and what a paper would
@@ -315,14 +338,27 @@ DSL→SVG + layman panels). Board generator: `atlas.py` (PyYAML).
 7. **Assemble ATLAS.md** (experiments in tree order, parents first; in incremental mode carry
    unchanged sections over VERBATIM), parking lot + archived tail, strip template comments,
    write. Frontmatter carries `template_rev` copied from the template's `Template-rev:` line.
-8. **Layman gate:** spawn the `layman-judge` agent
+8. **Curious-user pass (the new-reader questions):** spawn the `curious-user` agent (subagent type
+   `order-67-research-harness:curious-user:curious-user`) with the ATLAS.md path. It reads the WHOLE
+   dossier as a know-nothing outsider and returns a `## CuriousUserReport` — an explain-back of what
+   it thinks the research is and found, plus every **blocking** question it could not answer (an
+   experiment named but never explained in plain terms, a headline number that means nothing to it).
+   Revise the science / "In plain words" / "For the paper" narrative content so the TEXT answers
+   every blocking question (this is where a vaguely-described experiment earns a plain "what it asked
+   and what it found" sentence), re-write ATLAS.md, re-spawn — **max 2 rounds total**. Then write the
+   residual questions (still-open blocking ones after the cap, plus any minor / out-of-scope it
+   raised) VERBATIM into the head's `## Open questions — what a new reader still asks` section; if
+   none remain, the section says so explicitly. Carry the final `Could-I-explain-the-research`
+   verdict + open-question count into the `## AtlasReport`. Skip this pass only when NO layman /
+   science / paper-narrative content changed this run.
+9. **Layman gate:** spawn the `layman-judge` agent
    (`order-67-research-harness:layman-judge:layman-judge`) with the ATLAS.md path and the list
    of "In plain words" + science sections to judge (incremental mode: the rebuilt sections +
    the head). Read its `## LaymanReport`. On `NEEDS REWORK`: revise the flagged sections so
    the text itself answers every finding and question, re-write ATLAS.md, re-spawn — max 3
    rounds total. Still failing after round 3 → proceed, carry the unresolved findings into the
    `## AtlasReport` verbatim. Skip only when NO layman/science section changed.
-9. **Paper-author gate:** AFTER the layman gate clears, spawn the `paper-author` agent
+10. **Paper-author gate:** AFTER the layman gate clears, spawn the `paper-author` agent
    (`order-67-research-harness:paper-author:paper-author`) with the ATLAS.md path and the list of
    "For the paper" + science + mechanics/results sections to judge (incremental mode: the rebuilt
    sections + the head). Read its `## PaperReadinessReport`. On `NEEDS DETAIL`: revise the flagged
@@ -331,10 +367,12 @@ DSL→SVG + layman panels). Board generator: `atlas.py` (PyYAML).
    READY-TO-DRAFT (convergence); hard cap 10 rounds**. Still NEEDS DETAIL after round 10 → proceed,
    carry the unresolved findings into the `## AtlasReport` verbatim. Skip only when NO
    paper/science/methods section changed.
-10. **Render:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`
+11. **Render:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/atlas/render_html.py experiments/_atlas/ATLAS.md`
    → confirms the sibling ATLAS.html path, then `grep -c 'diagram DSL error'` on it — any hit
    means a malformed diagram block: fix and re-render. On renderer error: report, continue.
-11. **Emit the combined `## AtlasReport`** (atlas.py block + Regen-mode + Sections-rebuilt +
+12. **Emit the combined `## AtlasReport`** (atlas.py block + Regen-mode + Sections-rebuilt +
+   `Curious-user: <could-explain YES|PARTLY|NO> · <n> open questions (round n)>` +
+   `Curious-user-open-questions: <none | verbatim list>` +
    `Layman-gate: <PASS round n | NEEDS REWORK after 3 rounds>` + `Layman-open-findings:
    <none | verbatim list>` + `Paper-gate: <READY-TO-DRAFT round n | NEEDS DETAIL after 10 rounds (cap)>`
    + `Paper-open-findings: <none | verbatim list>` + `Diagrams: <n> DSL blocks, <n> errors` + the

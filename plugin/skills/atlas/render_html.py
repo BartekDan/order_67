@@ -28,6 +28,8 @@ v3 additions:
 - Headings starting with "In plain words" open a visually distinct layman panel; headings
   starting with "For the paper" open a distinct (teal) research-narrative panel. Each wraps
   the whole section (until the next heading of the same or higher level).
+- Headings starting with "Open questions" open a distinct (rust) "questions" panel (same wrap
+  rule) — the visible home of the curious-user agent's residual new-reader questions.
 """
 from __future__ import annotations
 
@@ -484,6 +486,9 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
                 elif text.lower().startswith("for the paper"):
                     out.append('<section class="paper">')
                     layman_lvl = lvl
+                elif text.lower().startswith("open questions"):
+                    out.append('<section class="questions">')
+                    layman_lvl = lvl
                 if lvl == 2:
                     nav.append({"lvl": 2, "text": re.sub(r"[`]", "", text), "id": hid})
                 elif lvl == 3 and text.startswith("`"):
@@ -654,6 +659,15 @@ section.paper h2,section.paper h3,section.paper h4{margin-top:22px}
 section.paper h4{color:#16505d}
 section.paper p{font-size:15.5px;line-height:1.7}
 section.paper ol li,section.paper ul li{font-size:15px;line-height:1.64;margin-bottom:8px}
+section.questions{background:linear-gradient(135deg,rgba(196,69,28,.06),rgba(139,47,16,.04));
+border:1px solid var(--soft-line);border-left:4px solid var(--rust);border-radius:6px;
+padding:6px 26px 14px;margin:30px 0 34px;position:relative}
+section.questions::before{content:'OPEN QUESTIONS — WHAT A NEWCOMER ASKS';position:absolute;
+top:-9px;left:18px;background:var(--paper);padding:0 8px;font-family:'JetBrains Mono',monospace;
+font-size:9.5px;letter-spacing:.16em;color:var(--rust);font-weight:600}
+section.questions h2,section.questions h3,section.questions h4{margin-top:22px}
+section.questions p{font-size:16px;line-height:1.72}
+section.questions ol li,section.questions ul li{font-size:15.5px;line-height:1.66;margin-bottom:9px}
 ol{margin:0 0 14px 24px;max-width:860px}
 ol li{margin-bottom:7px}
 table{border-collapse:collapse;width:100%;margin:0 0 20px;font-size:13.5px;background:var(--cream)}
