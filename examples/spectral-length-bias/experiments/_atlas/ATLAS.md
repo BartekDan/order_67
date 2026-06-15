@@ -4,7 +4,7 @@ artifact: atlas-deep
 generated_at: 2026-06-15T12:00:00Z
 project: spectral-length-bias (order-67 acceptance fixture)
 git_anchor: e513a3e 2026-06-15
-regen_mode: v3.1 (curious-user new-reader pass + Open-questions section; fixture body otherwise rev 2.0)
+regen_mode: v3.2 (ELI5 + worked-example layman bar; the v3.1 Open-questions section retired; fixture body otherwise rev 2.0)
 template_rev: "2.0"
 ---
 
@@ -98,33 +98,6 @@ gets made in this project, start to finish:
   half, with zero questions straddling both sides (checked mechanically).
 - **12 hours / 36 dollars** — the hard spending cap promised for the rented computer; about
   9.5 hours were actually used before the program stopped, within budget.
-
-## Open questions — what a new reader still asks
-
-> The honesty receipt of the new-reader pass: a person who had never seen this project read the
-> whole dossier as a curious outsider and was asked what they still could not answer. The verdict
-> was **could-explain: YES** — the whole story, including the retraction, landed end to end with no
-> blocking gaps. What remains below are the few smaller things a newcomer still wonders, kept
-> visible on purpose rather than smoothed away.
-
-- **What makes a measurement point an "H-Neuron"?** The plain-words sections use *H-Neuron* for the
-  internal signals the detector listened to, but never say what marks those particular points out
-  from any other signal inside the model, or why those ones were chosen.
-- **What is "proteus"?** The dossier says this teaching example re-enacts a real incident — *proteus
-  "Eksperyment 1"* — but a newcomer can't tell whether proteus was another team, an earlier version
-  of this same work, or the project's own working name (it is the last of these).
-- **Are the runtime details measured or illustrative?** The text is admirably upfront that no run
-  here is re-executable, yet it gives an exact rented machine, software versions and a 9.5-GPU-hour
-  burn — a reader is briefly unsure whether those were measured once and then frozen as the example,
-  or are plausible-but-invented values written to make the teaching fixture feel real.
-- **Is the headline "success bar" inside the tamper-proof seal?** The dossier says the 0.65 bar
-  the detector had to beat was fixed at registration time, yet also notes it sits *outside* the
-  sealed plan's fingerprint (the "hashed body") — so the very seal that proves nobody moved the
-  goalposts does not actually cover the most important pass/fail line. A reader is left unsure
-  whether that bar was truly locked before the data came in, and what would stop a quiet change.
-
-**Beyond this document** (out of scope — a teaching fixture need not answer this): whether the team
-ever built the length-proof version of the detector the ending hints at.
 
 ## The program at a glance
 
