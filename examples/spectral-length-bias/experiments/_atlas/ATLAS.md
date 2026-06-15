@@ -117,6 +117,11 @@ gets made in this project, start to finish:
   here is re-executable, yet it gives an exact rented machine, software versions and a 9.5-GPU-hour
   burn — a reader is briefly unsure whether those were measured once and then frozen as the example,
   or are plausible-but-invented values written to make the teaching fixture feel real.
+- **Is the headline "success bar" inside the tamper-proof seal?** The dossier says the 0.65 bar
+  the detector had to beat was fixed at registration time, yet also notes it sits *outside* the
+  sealed plan's fingerprint (the "hashed body") — so the very seal that proves nobody moved the
+  goalposts does not actually cover the most important pass/fail line. A reader is left unsure
+  whether that bar was truly locked before the data came in, and what would stop a quiet change.
 
 **Beyond this document** (out of scope — a teaching fixture need not answer this): whether the team
 ever built the length-proof version of the detector the ending hints at.
