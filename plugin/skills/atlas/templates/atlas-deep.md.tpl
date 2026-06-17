@@ -120,7 +120,10 @@
   per diagram, <= ~15 nodes, EVERY edge labeled with what moves. ASCII art is retired for
   diagrams; plain ``` blocks remain for genuinely textual content. EXCEPTION: the exploration
   tree stays the VERBATIM ASCII block copied from the freshly regenerated STATUS.md (single
-  source = atlas.yaml) — never re-drawn, never converted.
+  source = atlas.yaml) — never re-drawn, never converted IN THE MARKDOWN. (render_html.py then
+  PRESENTS that ASCII as a styled NESTED HTML tree — status pills, child rails, dimmed
+  dead/superseded branches, `why` notes — auto-detected by the leading lifecycle glyphs; a
+  presentation upgrade only, exactly like ```flow -> SVG. Leave the markdown ASCII alone.)
 
   LENGTH: per-experiment section target 130–350 lines including the layman section.
 -->
@@ -206,7 +209,9 @@ template_rev: "4.2"
 {{EXPLORATION_TREE_VERBATIM}}
 ```
 <!-- COPIED VERBATIM from the freshly regenerated STATUS.md tree block (source: atlas.yaml).
-     Includes lifecycle glyphs and each dead-end/superseded node's `why`. Never re-draw it. -->
+     Includes lifecycle glyphs and each dead-end/superseded node's `why`. Never re-draw it here
+     — render_html.py auto-detects the glyph-led block and renders it as a styled nested tree
+     in ATLAS.html (presentation only; this ASCII stays the single content source). -->
 
 ### Program data-flow (how a claim gets made)
 

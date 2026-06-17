@@ -25,6 +25,11 @@ v3 additions:
   rendered as deterministic layered SVG diagrams (boxes, labeled arrows, area groups) instead
   of ASCII art. Plain ``` blocks still render as monospace <pre> (legacy/back-compat). A DSL
   block that fails to parse falls back to <pre> with the error noted — never a crash.
+- A plain ``` block whose lines lead with a lifecycle glyph (✅ ▶ ✗ ⊘ ◻ …, per atlas.py LIFE)
+  is detected as the exploration tree and rendered as a styled NESTED tree (status pills, child
+  rails, dimmed dead/superseded branches, `why` notes) instead of a flat <pre>. Presentation
+  only — the verbatim ASCII stays the single content source in ATLAS.md; any parse surprise
+  falls back to <pre>.
 - Headings starting with "In plain words" open a visually distinct layman panel; headings
   starting with "For the paper" open a distinct (teal) research-narrative panel. Each wraps
   the whole section (until the next heading of the same or higher level).
@@ -391,6 +396,116 @@ def _render_svg(text: str) -> str:
             f'xmlns="http://www.w3.org/2000/svg">{"".join(parts)}</svg></figure>')
 
 
+# ----------------------------------------------------------------------------- exploration tree
+# The exploration-tree block is authored as VERBATIM ASCII (single source: atlas.yaml ->
+# atlas.py -> STATUS.md, copied into ATLAS.md per the template's EXCEPTION). Here we PRESENT
+# that same text as a styled, colour-coded NESTED tree — a presentation upgrade exactly like
+# ```flow -> SVG; the markdown content is never added to, dropped, or rewritten. Auto-detected
+# by the lifecycle glyph leading each node line (mirrors atlas.py LIFE), so it keeps working
+# across /atlas regens with no change to the template or to ATLAS.md.
+_TREE_GLYPH_META = {                        # glyph -> (human label, css key) — mirrors atlas.py LIFE
+    "✅": ("done", "done"),             # ✅
+    "▶": ("active", "active"),         # ▶
+    "⛔": ("blocked", "blocked"),       # ⛔
+    "✗": ("dead-end", "dead"),         # ✗
+    "⊘": ("superseded", "superseded"),  # ⊘
+    "⏸": ("deferred", "deferred"),     # ⏸
+    "◻": ("not built", "todo"),        # ◻
+    "\U0001f4a1": ("idea", "idea"),         # 💡
+}
+_TREE_ORDER = ["done", "active", "blocked", "dead", "superseded", "deferred", "todo", "idea"]
+_TREE_CLS_LABEL = {cls: lab for (lab, cls) in _TREE_GLYPH_META.values()}
+_TREE_CLS_GLYPH = {cls: g for g, (lab, cls) in _TREE_GLYPH_META.items()}
+
+
+def _looks_like_tree(raw: str) -> bool:
+    """A plain fenced block is the exploration tree iff >=2 of its lines begin (after indent)
+    with a known lifecycle glyph. Every other plain ``` block stays on the <pre> path."""
+    glyphs = tuple(_TREE_GLYPH_META)
+    hits = 0
+    for ln in raw.splitlines():
+        s = ln.strip()
+        if s and s.split(None, 1)[0].startswith(glyphs):
+            hits += 1
+            if hits >= 2:
+                return True
+    return False
+
+
+def _parse_tree(raw: str) -> list[dict]:
+    """Flatten the ASCII tree into nodes carrying an integer depth (4 spaces = one level).
+    A `why:` continuation line attaches to the node immediately above it."""
+    glyphs = tuple(_TREE_GLYPH_META)
+    flat: list[dict] = []
+    for ln in raw.splitlines():
+        if not ln.strip():
+            continue
+        depth = (len(ln) - len(ln.lstrip(" "))) // 4
+        s = ln.strip()
+        if s[:4].lower() == "why:":
+            if flat:
+                flat[-1]["why"] = s[4:].strip()
+            continue
+        head, _, rest = s.partition(" ")
+        match = next((g for g in glyphs if head.startswith(g)), None)
+        if match:
+            label, cls, glyph = (*_TREE_GLYPH_META[match], match)
+        else:                                # malformed line — show it, uncoloured, never crash
+            label, cls, glyph, rest = "", "node", "•", s
+        nid, sep, verdict = rest.partition(" — ")   # first " — " splits id from verdict
+        flat.append({"depth": depth, "glyph": glyph, "label": label, "cls": cls,
+                     "id": nid.strip(), "verdict": verdict.strip() if sep else "",
+                     "why": None, "children": []})
+    return flat
+
+
+def _nest_tree(flat: list[dict]) -> list[dict]:
+    """Build parent/child nesting from the flat depth list (a standard indent stack)."""
+    root: list[dict] = []
+    stack: list[dict] = []
+    for nd in flat:
+        while stack and stack[-1]["depth"] >= nd["depth"]:
+            stack.pop()
+        (stack[-1]["children"] if stack else root).append(nd)
+        stack.append(nd)
+    return root
+
+
+def _tree_node_html(nd: dict) -> str:
+    cls = nd["cls"]
+    lbl = f'<span class="tlbl">{html.escape(nd["label"])}</span>' if nd["label"] else ""
+    badge = (f'<span class="tbadge tbadge--{cls}"><span class="tg">{html.escape(nd["glyph"])}</span>'
+             f'{lbl}</span>')
+    verdict = f'<span class="tverdict">{inline(nd["verdict"])}</span>' if nd["verdict"] else ""
+    row = f'<div class="trow">{badge}<span class="tname">{html.escape(nd["id"])}</span>{verdict}</div>'
+    why = (f'<div class="twhy"><span class="twhy-tag">why</span>{inline(nd["why"])}</div>'
+           if nd.get("why") else "")
+    kids = (f'<div class="tkids">{"".join(_tree_node_html(c) for c in nd["children"])}</div>'
+            if nd["children"] else "")
+    return f'<div class="tnode tnode--{cls}">{row}{why}{kids}</div>'
+
+
+def _render_tree(raw: str) -> str:
+    flat = _parse_tree(raw)
+    if len(flat) < 2:
+        raise ValueError("not an exploration tree")
+    root = _nest_tree(flat)
+    counts: dict[str, int] = {}
+    for nd in flat:
+        counts[nd["cls"]] = counts.get(nd["cls"], 0) + 1
+    present = [c for c in _TREE_ORDER if counts.get(c)]
+    legend = "".join(
+        f'<span class="tbadge tbadge--{c}"><span class="tg">{html.escape(_TREE_CLS_GLYPH[c])}</span>'
+        f'<span class="tlbl">{html.escape(_TREE_CLS_LABEL[c])}</span></span>'
+        for c in present)
+    tally = " · ".join(f'<b>{counts[c]}</b> {_TREE_CLS_LABEL[c]}' for c in present)
+    summary = (f'<div class="tree-summary">{len(flat)} nodes on the tree — {tally}. '
+               f'Every branch we explored, including the ones that died (with the reason).</div>')
+    body = "".join(_tree_node_html(n) for n in root)
+    return (f'<figure class="tree"><div class="tree-legend">{legend}</div>{summary}'
+            f'<div class="troot">{body}</div></figure>')
+
+
 # ----------------------------------------------------------------------------- block parsing
 def parse(md: str) -> tuple[dict, list[dict], str]:
     """Return (frontmatter, nav entries, body html)."""
@@ -454,6 +569,12 @@ def parse(md: str) -> tuple[dict, list[dict], str]:
                     out.append(_render_svg(raw))
                 except _DslError as err:  # honest fallback, never a crash
                     out.append(f"<!-- diagram DSL error: {html.escape(str(err))} -->")
+                    out.append('<pre class="diagram">' + html.escape(raw) + "</pre>")
+            elif not info and _looks_like_tree(raw):
+                try:
+                    out.append(_render_tree(raw))
+                except Exception as err:  # honest fallback, never a crash
+                    out.append(f"<!-- exploration-tree render error: {html.escape(str(err))} -->")
                     out.append('<pre class="diagram">' + html.escape(raw) + "</pre>")
             else:
                 out.append('<pre class="diagram">' + html.escape(raw) + "</pre>")
@@ -634,6 +755,49 @@ overflow-x:auto;white-space:pre}
 figure.dsl{margin:0 0 22px;background:var(--cream);border:1px solid var(--soft-line);
 border-left:3px solid var(--olive);border-radius:4px;padding:18px 16px;overflow-x:auto}
 figure.dsl svg{display:block;margin:0 auto;width:100%;height:auto}
+figure.tree{margin:0 0 22px;background:var(--cream);border:1px solid var(--soft-line);
+border-left:3px solid var(--olive);border-radius:4px;padding:15px 18px 18px;overflow-x:auto}
+.tree-legend{display:flex;flex-wrap:wrap;gap:7px 9px;align-items:center;margin-bottom:11px}
+.tree-summary{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--grey);
+letter-spacing:.03em;margin-bottom:15px;padding-bottom:11px;border-bottom:1px dashed var(--soft-line)}
+.tree-summary b{color:var(--ink);font-weight:600}
+.troot,.tkids{display:flex;flex-direction:column;min-width:0}
+.tkids{margin:1px 0 3px 9px;padding-left:16px;border-left:1.5px solid rgba(10,10,10,.11)}
+.tnode{min-width:0}
+.trow{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 9px;padding:4px 9px;margin:2px 0;
+border-left:3px solid transparent;border-radius:0 4px 4px 0}
+.tname{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;color:var(--ink);
+white-space:nowrap}
+.tverdict{font-size:13px;color:var(--slate);line-height:1.5;flex:1 1 300px;min-width:200px}
+.twhy{font-size:12px;color:var(--grey);line-height:1.5;max-width:760px;margin:-1px 0 3px 9px;
+padding-left:16px;border-left:1.5px dotted rgba(10,10,10,.16)}
+.twhy-tag{font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:.12em;
+text-transform:uppercase;color:#9a7510;background:rgba(212,160,23,.12);
+border:1px solid rgba(154,117,16,.32);border-radius:3px;padding:0 5px;margin-right:8px}
+.tbadge{flex:none;display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;
+border:1px solid;border-radius:11px;padding:1px 8px 1px 6px;white-space:nowrap;line-height:1.5}
+.tbadge .tg{font-size:11px;line-height:1}
+.tbadge .tlbl{font-size:9px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+.tree-legend .tbadge{padding:2px 9px 2px 7px}
+.tbadge--done{color:var(--olive);border-color:rgba(74,93,35,.45);background:rgba(74,93,35,.07)}
+.tbadge--active{color:var(--teal);border-color:rgba(30,95,110,.45);background:rgba(30,95,110,.08)}
+.tbadge--dead{color:var(--rust);border-color:rgba(196,69,28,.5);background:rgba(196,69,28,.07)}
+.tbadge--superseded{color:#9a7510;border-color:rgba(212,160,23,.55);background:rgba(212,160,23,.12)}
+.tbadge--todo{color:var(--grey);border-color:rgba(107,107,107,.45);background:rgba(107,107,107,.08)}
+.tbadge--blocked{color:var(--rust-dark);border-color:rgba(139,47,16,.5);background:rgba(139,47,16,.09)}
+.tbadge--deferred{color:var(--grey);border-color:rgba(107,107,107,.45);background:rgba(107,107,107,.08)}
+.tbadge--idea{color:#9a7510;border-color:rgba(212,160,23,.5);background:rgba(212,160,23,.1)}
+.tbadge--node{color:var(--grey);border-color:rgba(107,107,107,.4);background:rgba(107,107,107,.06)}
+.tnode--done>.trow{border-left-color:rgba(74,93,35,.4)}
+.tnode--active>.trow{border-left-color:rgba(30,95,110,.5);background:rgba(30,95,110,.045)}
+.tnode--dead>.trow{border-left-color:var(--rust);background:rgba(196,69,28,.05)}
+.tnode--superseded>.trow{border-left-color:var(--ochre);background:rgba(212,160,23,.07)}
+.tnode--todo>.trow{border-left-color:rgba(107,107,107,.4)}
+.tnode--blocked>.trow{border-left-color:var(--rust-dark);background:rgba(139,47,16,.05)}
+.tnode--dead>.trow .tname,.tnode--superseded>.trow .tname{color:var(--slate)}
+.tnode--dead>.trow .tverdict,.tnode--superseded>.trow .tverdict{color:var(--grey)}
+.tnode--dead>.tkids{border-left-color:rgba(196,69,28,.2)}
+.tnode--superseded>.tkids{border-left-color:rgba(212,160,23,.28)}
 section.layman{background:linear-gradient(135deg,rgba(212,160,23,.07),rgba(30,95,110,.05));
 border:1px solid var(--soft-line);border-left:4px solid var(--ochre);border-radius:6px;
 padding:6px 26px 14px;margin:30px 0 34px;position:relative}
