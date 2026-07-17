@@ -7,7 +7,10 @@
 
 set -uo pipefail
 
-LOG="sessions/stop-events-$(date -I).log"
+# Anchor to the project root, NEVER the caller's cwd: hooks inherit the session shell's
+# persisted cwd, which scattered stray sessions/ fragments around the tree when it drifted.
+ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+LOG="$ROOT/sessions/stop-events-$(date -I).log"
 mkdir -p "$(dirname "$LOG")"
 printf '%s session stopped (M1 logger; auto-/drift deferred — run /drift manually)\n' \
   "$(date -Iseconds)" >> "$LOG"

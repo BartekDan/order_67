@@ -31,7 +31,9 @@ esac
 
 # Normalize against experiments/ canonical dir to prevent hyphen/underscore drift.
 HYPHENATED="${DERIVED//_/-}"
-EXP_ROOT="${CLAUDE_PROJECT_DIR:-.}/experiments"
+# Project root: env var (set for hooks) first; git toplevel guards a drifted-cwd fallback.
+ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+EXP_ROOT="$ROOT/experiments"
 if [[ -d "${EXP_ROOT}/${DERIVED}" ]]; then
   EXP="$DERIVED"
 elif [[ -d "${EXP_ROOT}/${HYPHENATED}" ]]; then
@@ -40,7 +42,7 @@ else
   EXP="$HYPHENATED"
 fi
 
-TRACE_FILE="trace/${EXP}.md"
+TRACE_FILE="$ROOT/trace/${EXP}.md"
 mkdir -p "$(dirname "$TRACE_FILE")"
 printf '%s\n' "- $(date -Iseconds): ${TOOL_NAME} → ${FILE_PATH}" >> "$TRACE_FILE"
 
